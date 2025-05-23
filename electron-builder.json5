@@ -1,21 +1,21 @@
-/**
- * @see https://www.electron.build/configuration/configuration
- */
+// @see https://www.electron.build/configuration/configuration
 {
-  "appId": "YourAppID",
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.xchanbik.vr-hypno",
   "asar": true,
+  "productName": "VR Hypno",
   "directories": {
     "output": "release/${version}"
   },
   "files": [
-    "dist-electron",
-    "dist"
+    "dist",
+    "dist-electron"
   ],
   "mac": {
-    "artifactName": "${productName}_${version}.${ext}",
     "target": [
       "dmg"
-    ]
+    ],
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {
     "target": [
@@ -26,12 +26,18 @@
         ]
       }
     ],
-    "artifactName": "${productName}_${version}.${ext}"
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }
