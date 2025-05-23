@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld(
   'electronAPI',
   {
     getFiles: () => ipcRenderer.invoke('get-files'),
+    getFileContent: (filename: string) => ipcRenderer.invoke('get-file-content', filename),
   }
 )
 

@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+interface FileContent {
+  id: string
+  timestamp: string
+  message: string
+}
+
 const files = ref<string[]>([])
+const fileContent = ref<FileContent | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -12,6 +19,13 @@ const loadFiles = async () => {
     const result = await window.electronAPI.getFiles()
     if (result.success) {
       files.value = result.files || []
+      // If we have test.json, load its content
+      if (files.value.includes('test.json')) {
+        const contentResult = await window.electronAPI.getFileContent('test.json')
+        if (contentResult.success) {
+          fileContent.value = contentResult.content
+        }
+      }
     } else {
       error.value = result.error || 'Unknown error occurred'
     }
@@ -35,9 +49,16 @@ onMounted(() => {
       <div v-if="loading">Loading...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
       <div v-else-if="files.length === 0" class="empty">No files found in data directory</div>
-      <ul v-else>
-        <li v-for="file in files" :key="file">{{ file }}</li>
-      </ul>
+      <div v-else>
+        <ul>
+          <li v-for="file in files" :key="file">{{ file }}</li>
+        </ul>
+        
+        <div v-if="fileContent" class="json-content">
+          <h3>test.json content:</h3>
+          <pre>{{ JSON.stringify(fileContent, null, 2) }}</pre>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -80,5 +101,21 @@ li {
 
 li:last-child {
   border-bottom: none;
+}
+
+.json-content {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }
 </style>

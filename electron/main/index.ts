@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import { join } from 'path'
-import { readdir, mkdir, writeFile } from 'fs/promises'
+import { readdir, mkdir, writeFile, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
 
 const require = createRequire(import.meta.url)
@@ -166,5 +166,21 @@ ipcMain.handle('get-files', async () => {
       return { success: true, files: [] }
     }
     return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('get-file-content', async (_, filename: string) => {
+  try {
+    const filePath = join(process.cwd(), 'data', filename)
+    const content = await readFile(filePath, 'utf-8')
+    return { 
+      success: true, 
+      content: JSON.parse(content)
+    }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: (error as Error).message 
+    }
   }
 })
