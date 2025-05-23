@@ -28,13 +28,21 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 contextBridge.exposeInMainWorld(
   'electronAPI',
   {
-    getFiles: () => ipcRenderer.invoke('get-files'),
-    getFileContent: (filename: string) => ipcRenderer.invoke('get-file-content', filename),
-    getSessions: () => ipcRenderer.invoke('get-sessions'),
+    // PLAYLISTS
     getPlaylists: () => ipcRenderer.invoke('get-playlists'),
     getPlaylist: (uid: string) => ipcRenderer.invoke('get-playlist', uid),
     createPlaylist: (data: { name: string; repeat: boolean; sessions: string[] }) => ipcRenderer.invoke('create-playlist', data),
     updatePlaylist: (data: { uid: string; info: any }) => ipcRenderer.invoke('update-playlist', data),
+    // SONGS
+    getSongs: () => ipcRenderer.invoke('get-songs'),
+    getSong: (uid: string) => ipcRenderer.invoke('get-song', uid),
+    createSong: (data: { info: any }) => ipcRenderer.invoke('create-song', data),
+    updateSong: (data: { uid: string; info: any }) => ipcRenderer.invoke('update-song', data),
+    // SESSIONS
+    getSessions: () => ipcRenderer.invoke('get-sessions'),
+    getSession: (uid: string) => ipcRenderer.invoke('get-session', uid),
+    createSession: (data: { info: any }) => ipcRenderer.invoke('create-session', data),
+    updateSession: (data: { uid: string; info: any }) => ipcRenderer.invoke('update-session', data),
   }
 )
 

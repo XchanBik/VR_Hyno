@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { t } from '@/i18n'
-import PlaylistEditor from '@/components/playlist/PlaylistEditor.vue'
+import PlaylistEditor from '@/components/player/playlist/PlaylistEditor.vue'
 import { useAppStore } from '@/store/app'
 
 interface PlaylistInfo {

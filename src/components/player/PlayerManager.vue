@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '@/store/app'
-import PlaylistManager from '@/components/playlist/PlaylistManager.vue'
-import PlaylistEditor from '@/components/playlist/PlaylistEditor.vue'
+import PlaylistManager from '@/components/player/playlist/PlaylistManager.vue'
+import PlaylistEditor from '@/components/player/playlist/PlaylistEditor.vue'
 import PlaylistPlayer from '@/components/player/PlaylistPlayer.vue'
 
 const appStore = useAppStore()
