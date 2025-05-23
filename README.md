@@ -1,48 +1,76 @@
-# VR Meditation Space
+# VR Hypno POC
 
-A WebXR application built with Three.js for guided meditation in virtual reality.
+Un POC (Proof of Concept) pour une application d'hypnose VR utilisant Electron et Vue.js.
 
-## Features
+## Fonctionnalités
 
-- VR-enabled 3D environment
-- Headset gaze cursor
-- Simple meditation room setup
-- WebXR support
+- Création automatique d'un dossier `data/` au démarrage
+- Génération d'un fichier `test.json` avec des données aléatoires
+- Lecture et affichage automatique du contenu du fichier
+- Interface utilisateur simple et réactive
 
-## Prerequisites
+## Prérequis
 
-- Node.js (v14 or higher)
-- A WebXR-capable browser (Chrome, Firefox, or Edge)
-- A VR headset (Oculus Quest, HTC Vive, etc.)
+- Node.js 18 ou supérieur
+- npm 9 ou supérieur
 
-## Setup
+## Installation
 
-1. Install dependencies:
+1. Cloner le repository :
+```bash
+git clone [url-du-repo]
+cd vr-hypno-poc
+```
+
+2. Installer les dépendances :
 ```bash
 npm install
 ```
 
-2. Start the development server:
+## Développement
+
+Pour lancer l'application en mode développement :
 ```bash
 npm run dev
 ```
 
-3. Open your browser and navigate to the URL shown in the terminal (usually http://localhost:5173)
+## Build
 
-4. Click the "Enter VR" button to start the VR experience
-
-## Development
-
-- The main application code is in `src/main.js`
-- The HTML entry point is `index.html`
-- Styles are included in the HTML file
-
-## Building for Production
-
-To create a production build:
-
+Pour créer l'exécutable :
 ```bash
 npm run build
 ```
 
-The built files will be in the `dist` directory. 
+L'exécutable sera créé dans le dossier `release`.
+
+## Structure du Projet
+
+```
+/
+├── src/
+│   ├── main/           # Processus principal Electron
+│   └── renderer/       # Application Vue.js
+├── data/              # Dossier créé automatiquement
+├── package.json
+└── vite.config.ts
+```
+
+## Fonctionnement
+
+1. Au démarrage, l'application :
+   - Crée un dossier `data/` dans le répertoire de l'utilisateur
+   - Génère un fichier `test.json` avec des données aléatoires
+   - Affiche le contenu dans l'interface
+
+2. Le fichier `test.json` contient :
+   - Un ID unique (UUID)
+   - Un timestamp
+   - Un contenu aléatoire
+
+## Technologies Utilisées
+
+- Vue.js 3 avec Composition API
+- Electron
+- Vite
+- TypeScript
+- IPC pour la communication entre processus
