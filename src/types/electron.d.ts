@@ -1,3 +1,5 @@
+import type { Session } from './session'
+
 export interface FileContent {
   id: string
   timestamp: string
@@ -13,6 +15,11 @@ interface ElectronAPI {
   getFileContent: (filename: string) => Promise<{
     success: boolean
     content?: FileContent
+    error?: string
+  }>
+  getSessions: () => Promise<{
+    success: boolean
+    sessions?: Session[]
     error?: string
   }>
 }

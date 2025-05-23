@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import { join } from 'path'
-import { readdir, mkdir, writeFile, readFile } from 'fs/promises'
+import { readdir, mkdir, writeFile, readFile, stat } from 'fs/promises'
 import { existsSync } from 'fs'
 
 const require = createRequire(import.meta.url)
@@ -153,6 +153,27 @@ async function ensureDataDirectory() {
   }
 }
 
+// Function to ensure sessions directory exists
+async function ensureSessionsDirectory() {
+  const sessionsPath = join(process.cwd(), 'data', 'sessions')
+  
+  if (!existsSync(sessionsPath)) {
+    await mkdir(sessionsPath, { recursive: true })
+  }
+}
+
+// Function to read session info
+async function readSessionInfo(sessionPath: string): Promise<any> {
+  try {
+    const infoPath = join(sessionPath, 'info.json')
+    const content = await readFile(infoPath, 'utf-8')
+    return JSON.parse(content)
+  } catch (error) {
+    console.error(`Error reading session info for ${sessionPath}:`, error)
+    return null
+  }
+}
+
 // Handle IPC events
 ipcMain.handle('get-files', async () => {
   try {
@@ -181,6 +202,43 @@ ipcMain.handle('get-file-content', async (_, filename: string) => {
     return { 
       success: false, 
       error: (error as Error).message 
+    }
+  }
+})
+
+ipcMain.handle('get-sessions', async () => {
+  try {
+    await ensureSessionsDirectory()
+    const sessionsPath = join(process.cwd(), 'data', 'sessions')
+    const folders = await readdir(sessionsPath)
+    
+    const sessions = await Promise.all(
+      folders.map(async (folder) => {
+        const sessionPath = join(sessionsPath, folder)
+        const stats = await stat(sessionPath)
+        
+        if (stats.isDirectory()) {
+          const info = await readSessionInfo(sessionPath)
+          if (info) {
+            return {
+              folder,
+              info
+            }
+          }
+        }
+        return null
+      })
+    )
+
+    return {
+      success: true,
+      sessions: sessions.filter((session): session is NonNullable<typeof session> => session !== null)
+    }
+  } catch (error) {
+    console.error('Error getting sessions:', error)
+    return {
+      success: false,
+      error: (error as Error).message
     }
   }
 })
