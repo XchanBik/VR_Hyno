@@ -11,90 +11,62 @@ const navigateTo = (view: 'player' | 'editor') => {
 </script>
 
 <template>
-  <div class="container">
-    <header>
-      <h1>VR Hypno</h1>
-      <nav>
-        <button 
-          :class="{ active: currentView === 'player' }"
-          @click="navigateTo('player')"
-        >
-          Player
-        </button>
-        <button 
-          :class="{ active: currentView === 'editor' }"
-          @click="navigateTo('editor')"
-        >
-          Editor
-        </button>
-      </nav>
+  <div class="min-h-screen flex flex-col bg-bimbo-50">
+    <header class="fixed top-0 left-0 w-full bg-gradient-to-r from-bimbo-400 via-bimbo-200 to-bimbo-400 shadow-md z-10 border-b border-bimbo-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+          <div class="flex items-center space-x-4">
+            <!-- Icône coeur glamour -->
+            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-bimbo-500 shadow-lg">
+              <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21s-6.5-4.35-9-7.5C-1.5 8.5 2.5 3.5 7 6.5c2.1 1.4 3 2.5 5 5 2-2.5 2.9-3.6 5-5C21.5 3.5 25.5 8.5 21 13.5c-2.5 3.15-9 7.5-9 7.5z" />
+              </svg>
+            </span>
+            <!-- Titre avec gradient rose -->
+            <span class="text-3xl font-extrabold bg-gradient-to-tr from-bimbo-700 to-bimbo-400 bg-clip-text text-transparent tracking-tight select-none drop-shadow">VR Hypno</span>
+          </div>
+          <nav class="flex space-x-2">
+            <button 
+              @click="navigateTo('player')"
+              :class="[
+                'btn',
+                'rounded-full',
+                'bg-bimbo-500',
+                'text-white',
+                currentView === 'player' ? 'ring-2 ring-bimbo-300 scale-105' : 'bg-bimbo-200 text-bimbo-700',
+                'hover:bg-bimbo-600',
+                'transition-all duration-150',
+                'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'
+              ]"
+            >
+              Player
+            </button>
+            <button 
+              @click="navigateTo('editor')"
+              :class="[
+                'btn',
+                'rounded-full',
+                'bg-bimbo-500',
+                'text-white',
+                currentView === 'editor' ? 'ring-2 ring-bimbo-300 scale-105' : 'bg-bimbo-200 text-bimbo-700',
+                'hover:bg-bimbo-600',
+                'transition-all duration-150',
+                'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'
+              ]"
+            >
+              Editor
+            </button>
+          </nav>
+        </div>
+      </div>
     </header>
-    <main>
-      <SessionList v-if="currentView === 'player'" /> <!-- Player view -->
-      <Editor v-else /> <!-- Editor view -->        
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-24 flex flex-col justify-center items-center">
+      <SessionList v-if="currentView === 'player'" />
+      <Editor v-else />
     </main>
   </div>
 </template>
 
 <style>
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f8f9fa;
-}
-
-.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-header {
-  background-color: #fff;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-header h1 {
-  margin: 0;
-  color: #2c3e50;
-}
-
-nav {
-  display: flex;
-  gap: 1rem;
-}
-
-nav button {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: none;
-  color: #666;
-  font-size: 1rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-nav button:hover {
-  background-color: #f0f0f0;
-  color: #2c3e50;
-}
-
-nav button.active {
-  background-color: #2c3e50;
-  color: white;
-}
-
-main {
-  flex: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  width: 100%;
-  box-sizing: border-box;
-}
+/* Tout est géré par Tailwind */
 </style>
