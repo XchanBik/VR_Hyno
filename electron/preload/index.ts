@@ -71,20 +71,14 @@ const safeDOM = {
  * https://matejkustec.github.io/SpinThatShit
  */
 function useLoading() {
-  const className = `loaders-css__square-spin`
+  const className = `bimbo-heart-spin`
   const styleContent = `
-@keyframes square-spin {
-  25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
-  50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
-  75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
-  100% { transform: perspective(100px) rotateX(0) rotateY(0); }
-}
-.${className} > div {
-  animation-fill-mode: both;
-  width: 50px;
-  height: 50px;
-  background: #fff;
-  animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+@keyframes bimbo-heart {
+  0%, 100% { transform: scale(1) rotate(-10deg); }
+  20% { transform: scale(1.1) rotate(10deg); }
+  40% { transform: scale(0.95) rotate(-10deg); }
+  60% { transform: scale(1.1) rotate(10deg); }
+  80% { transform: scale(1) rotate(-10deg); }
 }
 .app-loading-wrap {
   position: fixed;
@@ -93,19 +87,46 @@ function useLoading() {
   width: 100vw;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #282c34;
-  z-index: 9;
+  background: linear-gradient(135deg, #fff0fb 0%, #ff80df 100%);
+  z-index: 9999;
 }
-    `
+.${className} {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.${className} .heart {
+  width: 64px;
+  height: 64px;
+  animation: bimbo-heart 1.2s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+.${className} .text {
+  margin-top: 1.5rem;
+  color: #ff1ac6;
+  font-size: 1.3rem;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px #fff0fb;
+}
+`
   const oStyle = document.createElement('style')
   const oDiv = document.createElement('div')
 
   oStyle.id = 'app-loading-style'
   oStyle.innerHTML = styleContent
   oDiv.className = 'app-loading-wrap'
-  oDiv.innerHTML = `<div class="${className}"><div></div></div>`
+  oDiv.innerHTML = `
+    <div class="${className}">
+      <svg class="heart" viewBox="0 0 32 29.6">
+        <path fill="#ff1ac6" d="M23.6,0c-2.7,0-5.1,1.3-6.6,3.3C15.5,1.3,13.1,0,10.4,0C4.7,0,0,4.7,0,10.4c0,11.1,16,19.2,16,19.2s16-8.1,16-19.2C32,4.7,27.3,0,23.6,0z"/>
+      </svg>
+      <div class="text">Loading VR Hypno…</div>
+    </div>
+  `
 
   return {
     appendLoading() {

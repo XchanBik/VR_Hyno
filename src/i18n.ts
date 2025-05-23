@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue'
-
-export const locale = ref<'en' | 'fr'>('en')
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAppStore } from './store/app'
 
 const messages = {
   en: {
@@ -38,5 +38,7 @@ const messages = {
 }
 
 export function t(key: keyof typeof messages['en']) {
+  const appStore = useAppStore()
+  const { locale } = storeToRefs(appStore)
   return computed(() => messages[locale.value][key]).value
 } 

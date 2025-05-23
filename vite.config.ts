@@ -69,6 +69,11 @@ export default defineConfig(({ command }) => {
         port: +url.port,
       }
     })(),
+    resolve: {
+      alias: {
+        '@': '/src',
+      },
+    },
     clearScreen: false,
   }
 })

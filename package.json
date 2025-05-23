@@ -38,6 +38,8 @@
   },
   "dependencies": {
     "autoprefixer": "^7.2.6",
+    "pinia": "^3.0.2",
+    "pinia-plugin-persistedstate": "^4.3.0",
     "postcss": "^7.0.39",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17"
   }
