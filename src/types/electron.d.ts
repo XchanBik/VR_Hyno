@@ -1,4 +1,4 @@
-interface FileContent {
+export interface FileContent {
   id: string
   timestamp: string
   message: string
@@ -21,4 +21,6 @@ declare global {
   interface Window {
     electronAPI: ElectronAPI
   }
-} 
+}
+
+export {} 

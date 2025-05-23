@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-
-interface FileContent {
-  id: string
-  timestamp: string
-  message: string
-}
+import type { FileContent } from './types/electron'
 
 const files = ref<string[]>([])
 const fileContent = ref<FileContent | null>(null)
@@ -22,9 +17,7 @@ const loadFiles = async () => {
       // If we have test.json, load its content
       if (files.value.includes('test.json')) {
         const contentResult = await window.electronAPI.getFileContent('test.json')
-        if (contentResult.success) {
-          fileContent.value = contentResult.content
-        }
+        fileContent.value = contentResult.success && contentResult.content ? contentResult.content : null
       }
     } else {
       error.value = result.error || 'Unknown error occurred'
