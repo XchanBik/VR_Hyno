@@ -78,11 +78,6 @@ async function createWindow() {
     win.loadFile(indexHtml)
   }
 
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
-
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https:')) shell.openExternal(url)
@@ -145,21 +140,6 @@ async function ensureDataDirectory() {
   // Create directory if it doesn't exist
   if (!existsSync(dataPath)) {
     await mkdir(dataPath, { recursive: true })
-  }
-
-  // Check if directory is empty
-  const files = await readdir(dataPath)
-  if (files.length === 0) {
-    // Create test.json with random content
-    const testContent = {
-      id: generateRandomString(),
-      timestamp: new Date().toISOString(),
-      message: `Test message ${generateRandomString(20)}`
-    }
-    await writeFile(
-      join(dataPath, 'test.json'),
-      JSON.stringify(testContent, null, 2)
-    )
   }
 }
 
