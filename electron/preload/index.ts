@@ -31,6 +31,8 @@ contextBridge.exposeInMainWorld(
     getFiles: () => ipcRenderer.invoke('get-files'),
     getFileContent: (filename: string) => ipcRenderer.invoke('get-file-content', filename),
     getSessions: () => ipcRenderer.invoke('get-sessions'),
+    getPlaylists: () => ipcRenderer.invoke('get-playlists'),
+    getPlaylist: (uid: string) => ipcRenderer.invoke('get-playlist', uid),
   }
 )
 

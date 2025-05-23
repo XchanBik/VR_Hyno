@@ -7,6 +7,11 @@ import { join } from 'path'
 import { readdir, mkdir, writeFile, readFile, stat } from 'fs/promises'
 import { existsSync } from 'fs'
 
+// --- IPC Handlers ---
+import { registerSongIpcHandlers } from './ipc/song'
+import { registerSessionIpcHandlers } from './ipc/session'
+import { registerPlaylistIpcHandlers } from './ipc/playlist'
+
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -45,7 +50,10 @@ let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
+console.log('[main] Electron main process starting...')
+
 async function createWindow() {
+  console.log('[main] Creating main window...')
   win = new BrowserWindow({
     title: 'Main window',
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
@@ -176,7 +184,15 @@ async function readSessionInfo(sessionPath: string): Promise<any> {
   }
 }
 
-// Handle IPC events
+console.log('[main] Registering Song IPC handlers...')
+registerSongIpcHandlers(ipcMain)
+console.log('[main] Registering Session IPC handlers...')
+registerSessionIpcHandlers(ipcMain)
+console.log('[main] Registering Playlist IPC handlers...')
+registerPlaylistIpcHandlers(ipcMain)
+
+// Les handlers ci-dessous (get-files, get-file-content) sont obsolètes avec la nouvelle structure IPC
+// et pourront être supprimés une fois la migration terminée.
 ipcMain.handle('get-files', async () => {
   try {
     await ensureDataDirectory()
@@ -204,43 +220,6 @@ ipcMain.handle('get-file-content', async (_, filename: string) => {
     return { 
       success: false, 
       error: (error as Error).message 
-    }
-  }
-})
-
-ipcMain.handle('get-sessions', async () => {
-  try {
-    await ensureSessionsDirectory()
-    const sessionsPath = join(process.cwd(), 'data', 'sessions')
-    const folders = await readdir(sessionsPath)
-    
-    const sessions = await Promise.all(
-      folders.map(async (folder) => {
-        const sessionPath = join(sessionsPath, folder)
-        const stats = await stat(sessionPath)
-        
-        if (stats.isDirectory()) {
-          const info = await readSessionInfo(sessionPath)
-          if (info) {
-            return {
-              folder,
-              info
-            }
-          }
-        }
-        return null
-      })
-    )
-
-    return {
-      success: true,
-      sessions: sessions.filter((session): session is NonNullable<typeof session> => session !== null)
-    }
-  } catch (error) {
-    console.error('Error getting sessions:', error)
-    return {
-      success: false,
-      error: (error as Error).message
     }
   }
 })
