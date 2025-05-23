@@ -34,7 +34,20 @@
       "dist-electron/**/*"
     ],
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "VR-Hypno-POC-Setup-${version}.exe"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "artifactName": "VR-Hypno-POC-${version}.${ext}"
     }
   }
 }
