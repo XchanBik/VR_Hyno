@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import App from './App.vue'
 import './style.css'  // Import Tailwind CSS
 
@@ -9,9 +9,9 @@ import Editor from './components/editor/Editor.vue'
 import Player from './components/player/Player.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [
-    { path: '/', redirect: '/editor' },
+    { path: '/', redirect: '/player' },
     { path: '/editor', component: Editor },
     { path: '/player', component: Player }
   ]

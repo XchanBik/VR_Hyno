@@ -281,6 +281,32 @@ onUnmounted(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
   wavesurfer.value?.destroy()
 })
+
+const handleFileSelect = async () => {
+  try {
+    // Open file picker
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [{
+        description: 'Audio Files',
+        accept: {
+          'audio/*': ['.mp3', '.wav', '.ogg']
+        }
+      }]
+    })
+
+    // Get the file
+    const file = await fileHandle.getFile()
+    
+    // Upload to session
+    await store.uploadAudio(currentSession.value.id, file)
+    
+    // Update UI
+    showSuccessMessage('Audio file uploaded successfully')
+  } catch (error) {
+    console.error('Error selecting file:', error)
+    showErrorMessage('Failed to upload audio file')
+  }
+}
 </script>
 
 <style scoped>

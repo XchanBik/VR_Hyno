@@ -1,21 +1,82 @@
 <template>
   <div class="player">
-    <div v-if="!isVRMode" class="session-selector">
-      <h2>Select Meditation Session</h2>
-      <div v-if="sessions.length === 0" class="no-sessions">
-        No sessions available. Please create a session in the editor first.
-      </div>
-      <div v-else class="sessions-list">
-        <div v-for="session in sessions" :key="session.id" class="session-item" @click="selectSession(session)">
-          <h3>{{ session.name }}</h3>
-          <p>Duration: {{ formatTime(session.duration) }}</p>
-        </div>
-      </div>
+    <!-- Directory Selection View -->
+    <div v-if="!store.rootDirHandle" class="directory-selector">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Welcome to VR Meditation</h2>
+      <p class="text-gray-600 mb-8">
+        Please select a folder where your meditation sessions will be stored.
+      </p>
+      <button @click="selectDirectory" class="btn btn-primary">
+        Select Sessions Folder
+      </button>
     </div>
 
-    <div id="vr-container"></div>
-    <div class="controls" v-if="!isVRMode">
-      <button @click="enterVR" :disabled="!isVRSupported || !selectedSession">Enter VR</button>
+    <!-- Main App View -->
+    <div v-else>
+      <div v-if="!isVRMode" class="session-selector">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Select Meditation Session</h2>
+        <div v-if="sessions.length === 0" class="no-sessions text-center py-8">
+          <p class="text-gray-500">No sessions available. Please create a session in the editor first.</p>
+          <router-link to="/editor" class="btn btn-primary mt-4 inline-block">
+            Go to Editor
+          </router-link>
+        </div>
+        <div v-else class="sessions-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="session in sessions" 
+               :key="session.id" 
+               class="session-item bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+               @click="selectSession(session)">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-semibold text-gray-900">{{ session.name }}</h3>
+              <span class="px-2 py-1 text-sm rounded-full"
+                    :class="{
+                      'bg-green-100 text-green-800': session.metadata.difficulty === 'beginner',
+                      'bg-yellow-100 text-yellow-800': session.metadata.difficulty === 'intermediate',
+                      'bg-red-100 text-red-800': session.metadata.difficulty === 'advanced'
+                    }">
+                {{ session.metadata.difficulty }}
+              </span>
+            </div>
+            
+            <p class="text-gray-600 mb-4">{{ session.metadata.description }}</p>
+            
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span v-for="tag in session.metadata.tags" 
+                    :key="tag"
+                    class="px-2 py-1 text-sm bg-gray-100 text-gray-700 rounded-full">
+                {{ tag }}
+              </span>
+            </div>
+            
+            <div class="flex justify-between items-center text-sm text-gray-500">
+              <span>{{ formatTime(session.metadata.duration) }}</span>
+              <span>By {{ session.metadata.author }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="vr-container"></div>
+      <div class="controls" v-if="!isVRMode">
+        <button @click="enterVR" 
+                :disabled="!isVRSupported || !selectedSession"
+                class="btn btn-primary">
+          Enter VR
+        </button>
+      </div>
+
+      <!-- No Session View -->
+      <div v-if="!currentSession" class="text-center py-12">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">
+          No Active Session
+        </h2>
+        <p class="text-gray-500 mb-8">
+          No sessions available. Please create a session in the editor first.
+        </p>
+        <router-link to="/editor" class="btn btn-primary">
+          Go to Editor
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -34,9 +95,30 @@ const sessions = ref([])
 
 let scene, camera, renderer, cursor, raycaster, mouse
 
+const selectDirectory = async () => {
+  try {
+    await store.initRootDirectory()
+    await store.loadSessions()
+    sessions.value = store.sessions
+    checkVRSupport()
+  } catch (error) {
+    console.error('Error selecting directory:', error)
+  }
+}
+
+onMounted(() => {
+  checkVRSupport()
+})
+
 onMounted(async () => {
-  await store.loadSessions()
-  sessions.value = store.sessions
+  try {
+    await store.initRootDirectory()
+    await store.loadSessions()
+    sessions.value = store.sessions
+    checkVRSupport()
+  } catch (error) {
+    console.error('Error initializing app:', error)
+  }
 })
 
 onUnmounted(() => {
@@ -197,6 +279,7 @@ const formatTime = (time) => {
   width: 100vw;
   height: 100vh;
   position: relative;
+  background-color: #f5f5f5;
 }
 
 #vr-container {
@@ -212,66 +295,40 @@ const formatTime = (time) => {
   z-index: 1000;
 }
 
-.controls button {
-  padding: 12px 24px;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.controls button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
 .session-selector {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-width: 600px;
   width: 90%;
-}
-
-.sessions-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .session-item {
-  background: #f5f5f5;
-  padding: 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  transition: transform 0.2s;
 }
 
 .session-item:hover {
-  background: #e0e0e0;
+  transform: translateY(-2px);
 }
 
-.session-item h3 {
-  margin: 0 0 10px 0;
-}
-
-.session-item p {
-  margin: 0;
-  color: #666;
-}
-
-.no-sessions {
+.directory-selector {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
   text-align: center;
-  color: #666;
-  padding: 20px;
+  padding: 2rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 </style> 

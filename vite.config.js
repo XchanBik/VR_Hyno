@@ -1,17 +1,21 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [vue()],
-  server: {
-    host: true
-  },
+  plugins: [
+    vue(),
+    viteSingleFile()
+  ],
+  base: './',
   build: {
-    assetsDir: 'assets',
+    outDir: 'dist',
+    assetsInlineLimit: 100000000,
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html')
+      output: {
+        manualChunks: undefined,
+        inlineDynamicImports: true
       }
     }
   },

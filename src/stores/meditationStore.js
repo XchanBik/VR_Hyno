@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useMeditationStore = defineStore('meditation', () => {
   const currentAudio = ref(null)
@@ -7,63 +8,77 @@ export const useMeditationStore = defineStore('meditation', () => {
   const hasUnsavedChanges = ref(false)
   const sessions = ref([])
   const currentSession = ref(null)
+  const rootDirHandle = ref(null)
 
-  // Default configuration template
-  const defaultConfig = {
-    name: "Default Configuration",
-    version: "1.0",
-    environment: {
-      backgroundColor: "#222222",
-      ambientLight: {
-        color: "#ffffff",
-        intensity: 0.5
-      },
-      directionalLight: {
-        color: "#ffffff",
-        intensity: 0.8,
-        position: [5, 5, 5]
-      }
-    },
-    room: {
-      width: 10,
-      height: 5,
-      depth: 10,
-      wallColor: "#cccccc",
-      floorColor: "#999999"
-    },
-    events: []
+  // Get base path for songs directory - always relative to index.html
+  const getSongsPath = () => {
+    return './songs'
   }
 
-  // Create a new meditation session
+  // Initialize root directory
+  const initRootDirectory = async () => {
+    try {
+      // Request permission to access the songs directory
+      const dirHandle = await window.showDirectoryPicker({
+        startIn: 'documents',
+        id: 'meditation-sessions',
+        mode: 'readwrite'
+      })
+
+      // Verify we have write access by creating and removing a test file
+      const testFile = await dirHandle.getFileHandle('test.txt', { create: true })
+      await dirHandle.removeEntry('test.txt')
+
+      rootDirHandle.value = dirHandle
+      return dirHandle
+    } catch (error) {
+      console.error('Error initializing root directory:', error)
+      throw error
+    }
+  }
+
+  // Create a new session
   const createNewSession = async (sessionName) => {
     try {
-      // Create a unique ID for the session
-      const sessionId = `meditation-${Date.now()}`
-      
-      // Create the session data
-      const newSession = {
-        id: sessionId,
-        name: sessionName,
-        configs: [
-          {
-            id: 'default',
-            name: 'Default Configuration',
-            data: { ...defaultConfig }
-          }
-        ]
+      if (!rootDirHandle.value) {
+        throw new Error('Root directory not initialized')
       }
 
-      // Add to sessions list
-      sessions.value.push(newSession)
-      currentSession.value = newSession
-      currentConfig.value = defaultConfig
+      const sessionId = uuidv4()
+      const sessionDirHandle = await rootDirHandle.value.getDirectoryHandle(sessionId, { create: true })
       
-      // Save to localStorage
-      saveSessions()
-      
-      return newSession
+      const config = {
+        name: sessionName,
+        version: "1.0",
+        author: "VR Meditation App",
+        created: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        duration: 0,
+        tags: [],
+        description: "",
+        difficulty: "beginner",
+        category: "general",
+        audio: null
+      }
+
+      // Create config.json file
+      const configFileHandle = await sessionDirHandle.getFileHandle('config.json', { create: true })
+      const writable = await configFileHandle.createWritable()
+      await writable.write(JSON.stringify(config, null, 2))
+      await writable.close()
+
+      const session = {
+        id: sessionId,
+        name: sessionName,
+        config
+      }
+
+      sessions.value.push(session)
+      currentSession.value = session
+      currentConfig.value = config
+      return session
     } catch (error) {
-      console.error('Error creating new session:', error)
+      console.error('Error creating session:', error)
       throw error
     }
   }
@@ -71,72 +86,123 @@ export const useMeditationStore = defineStore('meditation', () => {
   // Load available sessions
   const loadSessions = async () => {
     try {
-      const savedSessions = localStorage.getItem('meditationSessions')
-      if (savedSessions) {
-        sessions.value = JSON.parse(savedSessions)
+      if (!rootDirHandle.value) {
+        throw new Error('Root directory not initialized')
       }
+
+      const sessionsList = []
+      for await (const entry of rootDirHandle.value.values()) {
+        if (entry.kind === 'directory') {
+          try {
+            const configFileHandle = await entry.getFileHandle('config.json')
+            const configFile = await configFileHandle.getFile()
+            const config = JSON.parse(await configFile.text())
+            
+            sessionsList.push({
+              id: entry.name,
+              name: config.name,
+              config
+            })
+          } catch (error) {
+            console.error(`Error loading config for ${entry.name}:`, error)
+          }
+        }
+      }
+
+      sessions.value = sessionsList
+      return sessions.value
     } catch (error) {
       console.error('Error loading sessions:', error)
-    }
-  }
-
-  // Save sessions to localStorage
-  const saveSessions = () => {
-    localStorage.setItem('meditationSessions', JSON.stringify(sessions.value))
-  }
-
-  // Save current session configuration
-  const saveSessionConfig = async (sessionId, configName, config) => {
-    try {
-      const session = sessions.value.find(s => s.id === sessionId)
-      if (!session) throw new Error('Session not found')
-
-      // Create new config entry
-      const newConfig = {
-        id: configName.toLowerCase().replace(/\s+/g, '-'),
-        name: configName,
-        data: config
-      }
-
-      // Update or add config
-      const existingConfigIndex = session.configs.findIndex(c => c.id === newConfig.id)
-      if (existingConfigIndex >= 0) {
-        session.configs[existingConfigIndex] = newConfig
-      } else {
-        session.configs.push(newConfig)
-      }
-
-      // Update current config
-      currentConfig.value = config
-      hasUnsavedChanges.value = false
-
-      // Save to localStorage
-      saveSessions()
-      
-      return newConfig
-    } catch (error) {
-      console.error('Error saving session config:', error)
-      throw error
+      sessions.value = []
+      return []
     }
   }
 
   // Load a specific session
-  const loadSession = async (sessionId, configId = 'default') => {
-    const session = sessions.value.find(s => s.id === sessionId)
-    if (session) {
-      try {
-        currentSession.value = session
-        // Load configuration
-        const config = session.configs.find(c => c.id === configId)
-        if (config) {
-          currentConfig.value = config.data
-        } else {
-          currentConfig.value = defaultConfig
-        }
-      } catch (error) {
-        console.error('Error loading session:', error)
-        throw error
+  const loadSession = async (sessionId) => {
+    try {
+      if (!rootDirHandle.value) {
+        throw new Error('Root directory not initialized')
       }
+
+      const sessionDirHandle = await rootDirHandle.value.getDirectoryHandle(sessionId)
+      const configFileHandle = await sessionDirHandle.getFileHandle('config.json')
+      const configFile = await configFileHandle.getFile()
+      const config = JSON.parse(await configFile.text())
+
+      const session = {
+        id: sessionId,
+        name: config.name,
+        config
+      }
+
+      currentSession.value = session
+      currentConfig.value = config
+      return session
+    } catch (error) {
+      console.error('Error loading session:', error)
+      throw error
+    }
+  }
+
+  // Upload audio file to a session
+  const uploadAudio = async (sessionId, file) => {
+    try {
+      if (!rootDirHandle.value) {
+        throw new Error('Root directory not initialized')
+      }
+
+      const sessionDirHandle = await rootDirHandle.value.getDirectoryHandle(sessionId)
+      const audioFileHandle = await sessionDirHandle.getFileHandle(file.name, { create: true })
+      const writable = await audioFileHandle.createWritable()
+      await writable.write(await file.arrayBuffer())
+      await writable.close()
+
+      // Update config with audio info
+      const configFileHandle = await sessionDirHandle.getFileHandle('config.json')
+      const configFile = await configFileHandle.getFile()
+      const config = JSON.parse(await configFile.text())
+      
+      config.audio = {
+        filename: file.name,
+        duration: 0, // You'll need to get this from the audio file
+        size: file.size,
+        type: file.type
+      }
+      config.lastModified = new Date().toISOString()
+
+      // Save updated config
+      const writableConfig = await configFileHandle.createWritable()
+      await writableConfig.write(JSON.stringify(config, null, 2))
+      await writableConfig.close()
+
+      // Update store state
+      currentConfig.value = config
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value.config = config
+      }
+
+      return config
+    } catch (error) {
+      console.error('Error uploading audio:', error)
+      throw error
+    }
+  }
+
+  // Get audio URL for a session
+  const getAudioUrl = async (sessionId, fileName) => {
+    try {
+      if (!rootDirHandle.value) {
+        throw new Error('Root directory not initialized')
+      }
+
+      const sessionDirHandle = await rootDirHandle.value.getDirectoryHandle(sessionId)
+      const audioFileHandle = await sessionDirHandle.getFileHandle(fileName)
+      const file = await audioFileHandle.getFile()
+      return URL.createObjectURL(file)
+    } catch (error) {
+      console.error('Error getting audio URL:', error)
+      throw error
     }
   }
 
@@ -144,7 +210,7 @@ export const useMeditationStore = defineStore('meditation', () => {
   const setCurrentSession = (session) => {
     currentSession.value = session
     if (session) {
-      currentConfig.value = session.configs[0]?.data || defaultConfig
+      currentConfig.value = session.config
     } else {
       currentConfig.value = null
     }
@@ -164,11 +230,13 @@ export const useMeditationStore = defineStore('meditation', () => {
     currentSession,
     hasUnsavedChanges,
     sessions,
-    defaultConfig,
+    rootDirHandle,
+    initRootDirectory,
     createNewSession,
     loadSessions,
-    saveSessionConfig,
     loadSession,
+    uploadAudio,
+    getAudioUrl,
     setCurrentSession,
     setHasChanges,
     hasChanges
