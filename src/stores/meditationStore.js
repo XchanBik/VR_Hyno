@@ -6,6 +6,7 @@ export const useMeditationStore = defineStore('meditation', () => {
   const currentConfig = ref(null)
   const hasUnsavedChanges = ref(false)
   const sessions = ref([])
+  const currentSession = ref(null)
 
   // Default configuration template
   const defaultConfig = {
@@ -33,7 +34,7 @@ export const useMeditationStore = defineStore('meditation', () => {
     events: []
   }
 
-  // Create a new meditation session folder
+  // Create a new meditation session
   const createNewSession = async (sessionName) => {
     try {
       // Create a unique ID for the session
@@ -43,20 +44,23 @@ export const useMeditationStore = defineStore('meditation', () => {
       const newSession = {
         id: sessionId,
         name: sessionName,
-        folder: `/songs/${sessionId}`,
         configs: [
           {
             id: 'default',
             name: 'Default Configuration',
-            file: `/songs/${sessionId}/default.json`
+            data: { ...defaultConfig }
           }
         ]
       }
 
       // Add to sessions list
       sessions.value.push(newSession)
+      currentSession.value = newSession
+      currentConfig.value = defaultConfig
       
-      // Return the new session data
+      // Save to localStorage
+      saveSessions()
+      
       return newSession
     } catch (error) {
       console.error('Error creating new session:', error)
@@ -67,8 +71,6 @@ export const useMeditationStore = defineStore('meditation', () => {
   // Load available sessions
   const loadSessions = async () => {
     try {
-      // In a real app, this would scan the public/songs directory
-      // For now, we'll use localStorage to persist session data
       const savedSessions = localStorage.getItem('meditationSessions')
       if (savedSessions) {
         sessions.value = JSON.parse(savedSessions)
@@ -87,19 +89,26 @@ export const useMeditationStore = defineStore('meditation', () => {
   const saveSessionConfig = async (sessionId, configName, config) => {
     try {
       const session = sessions.value.find(s => s.id === sessionId)
-      if (!session) return
+      if (!session) throw new Error('Session not found')
 
       // Create new config entry
       const newConfig = {
         id: configName.toLowerCase().replace(/\s+/g, '-'),
         name: configName,
-        file: `/songs/${sessionId}/${configName.toLowerCase().replace(/\s+/g, '-')}.json`
+        data: config
       }
 
-      // Add to session configs if it doesn't exist
-      if (!session.configs.find(c => c.id === newConfig.id)) {
+      // Update or add config
+      const existingConfigIndex = session.configs.findIndex(c => c.id === newConfig.id)
+      if (existingConfigIndex >= 0) {
+        session.configs[existingConfigIndex] = newConfig
+      } else {
         session.configs.push(newConfig)
       }
+
+      // Update current config
+      currentConfig.value = config
+      hasUnsavedChanges.value = false
 
       // Save to localStorage
       saveSessions()
@@ -116,16 +125,34 @@ export const useMeditationStore = defineStore('meditation', () => {
     const session = sessions.value.find(s => s.id === sessionId)
     if (session) {
       try {
+        currentSession.value = session
         // Load configuration
         const config = session.configs.find(c => c.id === configId)
         if (config) {
-          const response = await fetch(config.file)
-          currentConfig.value = await response.json()
+          currentConfig.value = config.data
+        } else {
+          currentConfig.value = defaultConfig
         }
       } catch (error) {
         console.error('Error loading session:', error)
+        throw error
       }
     }
+  }
+
+  // Set current session
+  const setCurrentSession = (session) => {
+    currentSession.value = session
+    if (session) {
+      currentConfig.value = session.configs[0]?.data || defaultConfig
+    } else {
+      currentConfig.value = null
+    }
+  }
+
+  // Update unsaved changes state
+  const setHasChanges = (value) => {
+    hasUnsavedChanges.value = value
   }
 
   // Check if there are unsaved changes
@@ -134,6 +161,7 @@ export const useMeditationStore = defineStore('meditation', () => {
   return {
     currentAudio,
     currentConfig,
+    currentSession,
     hasUnsavedChanges,
     sessions,
     defaultConfig,
@@ -141,6 +169,8 @@ export const useMeditationStore = defineStore('meditation', () => {
     loadSessions,
     saveSessionConfig,
     loadSession,
+    setCurrentSession,
+    setHasChanges,
     hasChanges
   }
 }) 
