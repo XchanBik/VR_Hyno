@@ -1,9 +1,17 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { mkdir, writeFile, readFile } from 'fs/promises'
 import { v4 as uuidv4 } from 'uuid'
 
-// Squirrel startup block removed for ES module compatibility
+const isDev = !app.isPackaged;
+const exeDir = isDev
+  ? process.cwd()
+  : process.env.PORTABLE_EXECUTABLE_DIR || dirname(process.execPath);
+const dataDir = join(exeDir, 'data');
+const testFile = join(dataDir, 'test.json');
+
+console.log('[VR-HYPNO] Data directory:', dataDir);
 
 const createWindow = async () => {
   // Create the browser window.
@@ -15,10 +23,6 @@ const createWindow = async () => {
       contextIsolation: false,
     },
   })
-
-  // Create data directory and test file
-  const dataDir = join(app.getPath('userData'), 'data')
-  const testFile = join(dataDir, 'test.json')
 
   try {
     // Create data directory if it doesn't exist
@@ -52,7 +56,6 @@ const createWindow = async () => {
 // IPC handlers
 ipcMain.handle('read-test-file', async () => {
   try {
-    const testFile = join(app.getPath('userData'), 'data', 'test.json')
     const content = await readFile(testFile, 'utf-8')
     return JSON.parse(content)
   } catch (error) {
