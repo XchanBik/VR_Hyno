@@ -7,19 +7,28 @@ export interface FileContent {
 }
 
 interface ElectronAPI {
-  getFiles: () => Promise<{
-    success: boolean
-    files?: string[]
-    error?: string
-  }>
-  getFileContent: (filename: string) => Promise<{
-    success: boolean
-    content?: FileContent
-    error?: string
-  }>
   getSessions: () => Promise<{
     success: boolean
     sessions?: Session[]
+    error?: string
+  }>
+  getPlaylists: () => Promise<{
+    success: boolean
+    playlists?: any[]
+    error?: string
+  }>
+  getPlaylist: (uid: string) => Promise<{
+    success: boolean
+    playlist?: any
+    error?: string
+  }>
+  createPlaylist: (data: { name: string; repeat: boolean; sessions: string[] }) => Promise<{
+    success: boolean
+    playlist?: any
+    error?: string
+  }>
+  updatePlaylist: (data: { uid: string; info: any }) => Promise<{
+    success: boolean
     error?: string
   }>
 }

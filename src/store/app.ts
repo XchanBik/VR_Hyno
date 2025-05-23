@@ -6,6 +6,7 @@ export const useAppStore = defineStore('app', {
     selectedSessionUid: null as string | null,
     locale: 'en' as 'en' | 'fr',
     currentView: 'player' as 'player' | 'editor',
+    playerView: 'list' as 'list' | 'edit' | 'play',
   }),
   actions: {
     setPlaylist(uid: string | null) {
@@ -19,6 +20,10 @@ export const useAppStore = defineStore('app', {
     },
     setView(view: 'player' | 'editor') {
       this.currentView = view
+    },
+    setPlayerView(view: 'list' | 'edit' | 'play', playlistUid: string | null = null) {
+      this.playerView = view
+      this.selectedPlaylistUid = playlistUid
     },
   },
   persist: true,

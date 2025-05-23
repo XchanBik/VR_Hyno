@@ -18,6 +18,8 @@ const messages = {
     cancel: 'Cancel',
     yes: 'Yes',
     no: 'No',
+    save: 'Save',
+    sessions: 'Sessions',
   },
   fr: {
     appTitle: 'VR Hypno',
@@ -34,6 +36,8 @@ const messages = {
     cancel: 'Annuler',
     yes: 'Oui',
     no: 'Non',
+    save: 'Enregistrer',
+    sessions: 'Sessions',
   }
 }
 

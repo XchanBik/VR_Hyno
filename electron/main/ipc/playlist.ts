@@ -36,18 +36,20 @@ export function registerPlaylistIpcHandlers(ipcMainInstance: typeof ipcMain) {
     console.log('[playlist] IPC get-playlists called');
     try {
       await ensurePlaylistsDirectory();
-      const files = await readdir(PLAYLISTS_PATH);
+      const entries = await readdir(PLAYLISTS_PATH, { withFileTypes: true });
+      const folders = entries.filter(e => e.isDirectory());
       const playlists = await Promise.all(
-        files.filter(f => f.endsWith('.json')).map(async (file) => {
-          const filePath = join(PLAYLISTS_PATH, file);
-          const stats = await stat(filePath);
-          if (stats.isFile()) {
-            const info = await readPlaylistInfo(file);
-            if (info) {
-              return { uid: file.replace(/\.json$/, ''), info };
-            }
+        folders.map(async (folder) => {
+          const uid = folder.name;
+          const infoPath = join(PLAYLISTS_PATH, uid, 'info.json');
+          try {
+            const content = await readFile(infoPath, 'utf-8');
+            const info = JSON.parse(content);
+            return { uid, info };
+          } catch (e) {
+            console.warn(`[playlist] Could not read info.json for ${uid}:`, e);
+            return null;
           }
-          return null;
         })
       );
       const filtered = playlists.filter((playlist) => playlist !== null);
@@ -66,11 +68,50 @@ export function registerPlaylistIpcHandlers(ipcMainInstance: typeof ipcMain) {
     console.log(`[playlist] IPC get-playlist called for uid: ${uid}`);
     try {
       await ensurePlaylistsDirectory();
-      const info = await readPlaylistInfo(uid + '.json');
-      if (info) {
-        return { success: true, playlist: info };
-      }
+      const infoPath = join(PLAYLISTS_PATH, uid, 'info.json');
+      const content = await readFile(infoPath, 'utf-8');
+      const info = JSON.parse(content);
+      return { success: true, playlist: info };
+    } catch (error) {
       return { success: false, error: 'Playlist not found' };
+    }
+  });
+
+  ipcMainInstance.handle('create-playlist', async (_event, data: { name: string; repeat: boolean; sessions: string[] }) => {
+    try {
+      console.log('[playlist] create-playlist called with:', data)
+      await ensurePlaylistsDirectory();
+      const uid = Math.random().toString(36).slice(2, 10);
+      const playlistDir = join(PLAYLISTS_PATH, uid);
+      console.log('[playlist] Creating playlist dir:', playlistDir)
+      if (!existsSync(playlistDir)) {
+        await mkdir(playlistDir, { recursive: true });
+        console.log('[playlist] Directory created')
+      } else {
+        console.log('[playlist] Directory already exists')
+      }
+      const info = {
+        name: data.name,
+        repeat: data.repeat,
+        sessions: data.sessions || [],
+      };
+      const infoPath = join(playlistDir, 'info.json');
+      console.log('[playlist] Writing info.json at:', infoPath, 'with:', info)
+      await import('fs/promises').then(fs => fs.writeFile(infoPath, JSON.stringify(info, null, 2), 'utf-8'));
+      console.log('[playlist] Playlist created successfully:', { uid, info })
+      return { success: true, playlist: { uid, info } };
+    } catch (error) {
+      console.error('[playlist] create-playlist error:', error)
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMainInstance.handle('update-playlist', async (_event, data: { uid: string, info: any }) => {
+    try {
+      await ensurePlaylistsDirectory();
+      const infoPath = join(PLAYLISTS_PATH, data.uid, 'info.json');
+      await import('fs/promises').then(fs => fs.writeFile(infoPath, JSON.stringify(data.info, null, 2), 'utf-8'));
+      return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }

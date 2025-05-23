@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld(
     getSessions: () => ipcRenderer.invoke('get-sessions'),
     getPlaylists: () => ipcRenderer.invoke('get-playlists'),
     getPlaylist: (uid: string) => ipcRenderer.invoke('get-playlist', uid),
+    createPlaylist: (data: { name: string; repeat: boolean; sessions: string[] }) => ipcRenderer.invoke('create-playlist', data),
+    updatePlaylist: (data: { uid: string; info: any }) => ipcRenderer.invoke('update-playlist', data),
   }
 )
 

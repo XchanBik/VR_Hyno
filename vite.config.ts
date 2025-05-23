@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import path from 'path'
 import electron from 'vite-plugin-electron/simple'
 import pkg from './package.json'
 
@@ -71,7 +72,7 @@ export default defineConfig(({ command }) => {
     })(),
     resolve: {
       alias: {
-        '@': '/src',
+        '@': path.resolve(__dirname, 'src'),
       },
     },
     clearScreen: false,

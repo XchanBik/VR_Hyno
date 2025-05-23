@@ -190,36 +190,3 @@ console.log('[main] Registering Session IPC handlers...')
 registerSessionIpcHandlers(ipcMain)
 console.log('[main] Registering Playlist IPC handlers...')
 registerPlaylistIpcHandlers(ipcMain)
-
-// Les handlers ci-dessous (get-files, get-file-content) sont obsolètes avec la nouvelle structure IPC
-// et pourront être supprimés une fois la migration terminée.
-ipcMain.handle('get-files', async () => {
-  try {
-    await ensureDataDirectory()
-    const dataPath = join(process.cwd(), 'data')
-    const files = await readdir(dataPath)
-    return { success: true, files }
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      // Directory doesn't exist, return empty array
-      return { success: true, files: [] }
-    }
-    return { success: false, error: (error as Error).message }
-  }
-})
-
-ipcMain.handle('get-file-content', async (_, filename: string) => {
-  try {
-    const filePath = join(process.cwd(), 'data', filename)
-    const content = await readFile(filePath, 'utf-8')
-    return { 
-      success: true, 
-      content: JSON.parse(content)
-    }
-  } catch (error) {
-    return { 
-      success: false, 
-      error: (error as Error).message 
-    }
-  }
-})

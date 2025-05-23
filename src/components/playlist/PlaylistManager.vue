@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { t } from '../i18n'
+import { t } from '@/i18n'
+import PlaylistEditor from '@/components/playlist/PlaylistEditor.vue'
+import { useAppStore } from '@/store/app'
 
 interface PlaylistInfo {
   uid: string
@@ -19,6 +21,11 @@ const showCreate = ref(false)
 const newPlaylistName = ref('')
 const newPlaylistRepeat = ref(false)
 const creating = ref(false)
+const editingPlaylistUid = ref<string | null>(null)
+
+const appStore = useAppStore()
+
+const emit = defineEmits(['edit', 'play'])
 
 async function loadPlaylists() {
   loading.value = true
@@ -38,36 +45,36 @@ async function loadPlaylists() {
   }
 }
 
+function openEditor(uid: string) {
+  appStore.setPlayerView('edit', uid)
+}
+
 async function createPlaylist() {
   if (!newPlaylistName.value.trim()) return
   creating.value = true
   try {
-    // Génère un UID simple côté front (à remplacer par backend plus tard)
-    const uid = Math.random().toString(36).slice(2, 10)
-    const playlist = {
-      uid,
+    const result = await window.electronAPI?.createPlaylist?.({
       name: newPlaylistName.value.trim(),
-      repeat: newPlaylistRepeat.value,
+      repeat: false, // default, will be editable in editor
       sessions: []
+    })
+    console.log('IPC createPlaylist result:', result)
+    if (result?.success) {
+      newPlaylistName.value = ''
+      newPlaylistRepeat.value = false
+      showCreate.value = false
+      await loadPlaylists()
+      openEditor(result.playlist.uid)
+    } else {
+      error.value = result?.error || t('unknownError')
+      console.error('Playlist creation error:', error.value)
     }
-    // Enregistre le fichier côté backend (à améliorer plus tard)
-    // @ts-ignore
-    const fs = window.require?.('fs')
-    const path = window.require?.('path')
-    const playlistsPath = path.join(process.cwd(), 'data', 'playlists')
-    if (!fs.existsSync(playlistsPath)) fs.mkdirSync(playlistsPath, { recursive: true })
-    fs.writeFileSync(
-      path.join(playlistsPath, uid + '.json'),
-      JSON.stringify(playlist, null, 2)
-    )
-    newPlaylistName.value = ''
-    newPlaylistRepeat.value = false
-    showCreate.value = false
-    await loadPlaylists()
   } catch (e) {
     error.value = (e as Error).message
+    console.error('Exception in createPlaylist:', e)
   } finally {
     creating.value = false
+    console.log('createPlaylist finished')
   }
 }
 
@@ -89,36 +96,44 @@ onMounted(loadPlaylists)
         <span class="text-2xl leading-none">+</span>
       </button>
     </h2>
-    <div v-if="loading" class="text-center py-8 text-bimbo-400">{{ t('loading') }}</div>
-    <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
-    <div v-else>
-      <div v-if="playlists.length === 0" class="text-center py-8 text-bimbo-400">
-        {{ t('noPlaylists') }}
-      </div>
-      <ul v-else class="space-y-4 mb-8">
-        <li v-for="playlist in playlists" :key="playlist.uid" class="bg-bimbo-50 rounded-lg px-4 py-3 flex items-center justify-between">
-          <div>
-            <div class="font-bold text-bimbo-700">{{ playlist.info.name }}</div>
-            <div class="text-xs text-bimbo-500">{{ t('repeat') }}: <span v-if="playlist.info.repeat">{{ t('yes') }}</span><span v-else>{{ t('no') }}</span></div>
-          </div>
-          <span class="text-bimbo-400 text-xs">{{ playlist.uid }}</span>
-        </li>
-      </ul>
+    <div v-if="editingPlaylistUid">
+      <PlaylistEditor :uid="editingPlaylistUid" @close="editingPlaylistUid = null; loadPlaylists()" />
     </div>
-    <form v-if="showCreate" @submit.prevent="createPlaylist" class="flex flex-col gap-4 mb-2 mt-2 bg-bimbo-50 rounded-lg p-4 shadow">
-      <input v-model="newPlaylistName" type="text" :placeholder="t('playlistName')" class="rounded-full px-4 py-2 border border-bimbo-200 focus:ring-2 focus:ring-bimbo-400 outline-none" />
-      <label class="flex items-center gap-2">
-        <input v-model="newPlaylistRepeat" type="checkbox" class="accent-bimbo-500" />
-        {{ t('repeat') }}
-      </label>
-      <div class="flex gap-2">
-        <button type="submit" class="btn rounded-full px-6 py-2 shadow bg-bimbo-500 text-white hover:bg-bimbo-600 transition font-bold tracking-wide uppercase" :disabled="creating">
-          {{ t('createPlaylist') }}
-        </button>
-        <button type="button" @click="showCreate = false" class="btn rounded-full px-6 py-2 shadow bg-bimbo-200 text-bimbo-700 hover:bg-bimbo-300 transition font-bold tracking-wide uppercase">
-          {{ t('cancel') }}
-        </button>
+    <div v-else>
+      <div v-if="loading" class="text-center py-8 text-bimbo-400">{{ t('loading') }}</div>
+      <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
+      <div v-else>
+        <div v-if="playlists.length === 0" class="text-center py-8 text-bimbo-400">
+          {{ t('noPlaylists') }}
+        </div>
+        <ul v-else class="space-y-4 mb-8">
+          <li v-for="playlist in playlists" :key="playlist.uid" class="bg-bimbo-50 rounded-lg px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <button class="bg-bimbo-500 hover:bg-bimbo-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow transition text-2xl" title="Play" @click="appStore.setPlayerView('play', playlist.uid)">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+              <div>
+                <div class="font-bold text-bimbo-700 text-lg">{{ playlist.info.name }}</div>
+                <div class="text-xs text-bimbo-500">{{ t('repeat') }}: <span v-if="playlist.info.repeat">{{ t('yes') }}</span><span v-else>{{ t('no') }}</span></div>
+              </div>
+            </div>
+            <button @click="openEditor(playlist.uid)" class="ml-2 bg-bimbo-200 hover:bg-bimbo-300 text-bimbo-700 rounded-full w-9 h-9 flex items-center justify-center shadow transition" title="Edit">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"/></svg>
+            </button>
+          </li>
+        </ul>
       </div>
-    </form>
+      <form v-if="showCreate" @submit.prevent="createPlaylist" class="flex flex-col gap-4 mb-2 mt-2 bg-bimbo-50 rounded-lg p-4 shadow">
+        <input v-model="newPlaylistName" type="text" :placeholder="t('playlistName')" class="rounded-full px-4 py-2 border border-bimbo-200 focus:ring-2 focus:ring-bimbo-400 outline-none" />
+        <div class="flex gap-2">
+          <button type="submit" class="btn rounded-full px-6 py-2 shadow bg-bimbo-500 text-white hover:bg-bimbo-600 transition font-bold tracking-wide uppercase" :disabled="creating">
+            {{ t('createPlaylist') }}
+          </button>
+          <button type="button" @click="showCreate = false" class="btn rounded-full px-6 py-2 shadow bg-bimbo-200 text-bimbo-700 hover:bg-bimbo-300 transition font-bold tracking-wide uppercase">
+            {{ t('cancel') }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template> 
