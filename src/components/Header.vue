@@ -9,7 +9,7 @@ const appStore = useAppStore()
 
 <template>
   <header class="fixed top-0 left-0 w-full bg-gradient-to-r from-bimbo-400 via-bimbo-200 to-bimbo-400 shadow-md z-10 border-b border-bimbo-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w mx-auto px-2">
       <div class="flex justify-between items-center h-20">
         <div class="flex items-center space-x-4">
           <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-bimbo-500 shadow-lg">
