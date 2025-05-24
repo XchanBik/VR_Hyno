@@ -20,7 +20,7 @@ function showPlayer(uid: string) {
 </script>
 
 <template>
-  <div class="w-full h-full bg-gradient-to-br from-bimbo-100 via-bimbo-50 to-bimbo-200 rounded-xl shadow-lg">
+  <div class="w-full h-full bg-gradient-to-br from-brand-100 via-brand-50 to-brand-200 rounded-xl shadow-lg">
     <div class="p-4 overflow-y-auto h-full">
       <PlaylistManager v-if="playerView === 'list'" />
       <PlaylistEditor v-else-if="playerView === 'edit'" :uid="selectedPlaylistUid!" @close="showList" />

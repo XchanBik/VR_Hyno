@@ -22,8 +22,8 @@ function toggleSidebar() {
 </script>
 
 <template>
-  <aside :class="['flex-shrink-0 h-full min-h-0 flex flex-col bg-bimbo-100 shadow-xl transition-all duration-300', collapsed ? 'w-15' : 'w-56']">
-    <button @click="toggleSidebar" class="mt-4 mb-2 ml-auto mr-2 bg-bimbo-200 hover:bg-bimbo-300 text-bimbo-700 rounded-full p-2 shadow transition flex items-center" :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+  <aside :class="['flex-shrink-0 h-full min-h-0 flex flex-col bg-brand-100 shadow-xl transition-all duration-300', collapsed ? 'w-15' : 'w-56']">
+    <button @click="toggleSidebar" class="mt-4 mb-2 ml-auto mr-2 bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full p-2 shadow transition flex items-center" :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
       <svg :class="['w-6 h-6 transition-transform']" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path v-if="collapsed" d="M9 5l7 7-7 7" />
         <path v-else d="M15 19l-7-7 7-7" />
@@ -34,7 +34,7 @@ function toggleSidebar() {
         @click="selectSection(section.key)"
         :class="[
           'flex items-center gap-3 px-4 py-3 rounded-full font-bold transition-all',
-          current === section.key ? 'bg-bimbo-500 text-white shadow-lg scale-105' : 'bg-bimbo-200 text-bimbo-700 hover:bg-bimbo-300',
+          current === section.key ? 'bg-brand-500 text-white shadow-lg scale-105' : 'bg-brand-200 text-brand-700 hover:bg-brand-300',
           collapsed ? 'justify-center px-2' : 'justify-start'
         ]"
         :title="section.label"
@@ -47,5 +47,5 @@ function toggleSidebar() {
 </template>
 
 <style scoped>
-/* Bimbo style accent */
+/* brand style accent */
 </style> 

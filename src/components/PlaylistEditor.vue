@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { t } from '@/i18n'
-import { useAppStore } from '@/store/app'
-import type { PlaylistInfo } from '@/types/playlist'
+import { t } from '../i18n'
+import { useAppStore } from '../store/app'
+import type { PlaylistInfo } from '../types/playlist'
 
 const props = defineProps<{ uid: string }>()
-// const emit = defineEmits(['close'])
-const appStore = useAppStore()
+const emit = defineEmits(['close'])
 
 const loading = ref(true)
 const error = ref<string | null>(null)
 const info = ref<PlaylistInfo | null>(null)
-const saving = ref(false)
-const saveError = ref<string | null>(null)
 
 async function load() {
   loading.value = true
@@ -32,39 +29,13 @@ async function load() {
   }
 }
 
-async function save() {
-  if (!info.value) return
-  saving.value = true
-  saveError.value = null
-  try {
-    const payload = {
-      uid: props.uid,
-      info: JSON.parse(JSON.stringify(info.value))
-    }
-    const result = await window.electronAPI?.updatePlaylist?.(payload)
-    // @ts-ignore
-    if (result?.success) {
-      appStore.setPlayerView('list', null)
-    } else {
-      saveError.value = result?.error || t('unknownError')
-    }
-  } catch (e) {
-    saveError.value = (e as Error).message
-  } finally {
-    saving.value = false
-  }
-}
-
 onMounted(load)
 watch(() => props.uid, load)
 </script>
 
 <template>
-  <div class="bg-brand-50 rounded-xl p-6 pt-16 shadow-lg relative">
-    <button @click="appStore.setPlayerView('list', null)" class="absolute top-4 left-4 bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full px-4 py-2 font-bold shadow transition flex items-center gap-2">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
-      Back
-    </button>
+  <div class="bg-brand-50 rounded-xl p-6 shadow-lg">
+    <button @click="$emit('close')" class="absolute top-4 right-4 text-brand-400 hover:text-brand-600 text-2xl">&times;</button>
     <div v-if="loading" class="text-center py-8 text-brand-400">{{ t('loading') }}</div>
     <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
     <div v-else-if="info">
@@ -88,10 +59,9 @@ watch(() => props.uid, load)
         </ul>
         <!-- TODO: add session, reorder, etc. -->
       </div>
-      <div v-if="saveError" class="text-center text-red-500 mb-2">{{ saveError }}</div>
       <div class="flex gap-2 mt-4">
-        <button @click="save" :disabled="saving" class="btn rounded-full px-6 py-2 shadow bg-brand-500 text-white hover:bg-brand-600 transition font-bold tracking-wide uppercase">{{ t('save') }}</button>
-        <button @click="appStore.setPlayerView('list', null)" class="btn rounded-full px-6 py-2 shadow bg-brand-200 text-brand-700 hover:bg-brand-300 transition font-bold tracking-wide uppercase">{{ t('cancel') }}</button>
+        <button class="btn rounded-full px-6 py-2 shadow bg-brand-500 text-white hover:bg-brand-600 transition font-bold tracking-wide uppercase">{{ t('save') }}</button>
+        <button @click="$emit('close')" class="btn rounded-full px-6 py-2 shadow bg-brand-200 text-brand-700 hover:bg-brand-300 transition font-bold tracking-wide uppercase">{{ t('cancel') }}</button>
       </div>
     </div>
   </div>

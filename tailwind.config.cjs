@@ -16,7 +16,7 @@ module.exports = {
           800: '#a61e4d',
           900: '#6c1e3a',
         },
-        bimbo: {
+        brand: {
           50: '#fff0fb',
           100: '#ffd6f5',
           200: '#ffb3ec',
