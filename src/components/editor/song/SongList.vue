@@ -2,18 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { t } from '@/i18n'
 import { useNavigationStore } from '@/store/navigation'
-import { nav, NavigationPath, PlaylistUidOption } from '@/navigationTree'
+import { nav, NavigationPath } from '@/navigationTree'
 
-interface SongInfo {
-  uid: string
-  info: {
-    name: string
-    duration: number
-    tags: string[]
-  }
-}
+import type { Song } from '@/types/song'
+import EditIcon from '@/assets/edit.svg'
 
-const songs = ref<SongInfo[]>([])
+
+const songs = ref<Song[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -38,7 +33,7 @@ async function loadSongs() {
 }
 
 function openEditor(uid: string) {
-  navStore.navigateTo(nav.player.playlist.edit as NavigationPath, { uid } as PlaylistUidOption)
+  navStore.navigateTo(nav.editor.songs.edit as NavigationPath, { uid })
 }
 
 async function addSong() {
@@ -118,43 +113,16 @@ onMounted(loadSongs)
             <div 
               v-for="song in songs" 
               :key="song.uid" 
-              class="bg-brand-50/90 backdrop-blur-xl rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 overflow-hidden group border-2 border-brand-200"
+              class="bg-brand-50 rounded-2xl shadow-lg px-6 py-5 mb-4 flex items-center justify-between border-2 border-brand-200"
             >
-              <!-- Header de la carte -->
-              <div class="bg-gradient-to-r from-brand-500 to-brand-700 p-4 text-white">
-                <div class="flex items-center justify-between mb-1">
-                  <h3 class="font-extrabold text-lg truncate pr-2 tracking-wide drop-shadow-brand">{{ song.info.name }}</h3>
-                  <button 
-                    @click="openEditor(song.uid)" 
-                    class="opacity-0 group-hover:opacity-100 bg-white/20 hover:bg-white/40 rounded-xl p-2 transition-all duration-200 border-2 border-brand-200"
-                    title="Éditer"
-                  >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"/>
-                    </svg>
-                  </button>
-                </div>
-                <div class="flex items-center gap-2 text-sm text-white/80">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                  </svg>
-                </div>
-              </div>
-              <!-- Corps de la carte -->
-              <div class="p-4">
-                <div class="flex items-center justify-between">
-                  <div class="text-sm text-brand-400 font-bold"></div>
-                  <button 
-                    @click="navStore.navigateTo(nav.player.playlist.player as NavigationPath, { uid: song.uid })"
-                    class="bg-gradient-to-r from-brand-500 to-brand-700 hover:from-brand-600 hover:to-brand-800 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-110 border-2 border-brand-200"
-                    title="Lire"
-                  >
-                    <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              <span class="block font-extrabold text-lg text-brand-700 whitespace-normal break-words min-w-[120px]">{{ song.info.name }}</span>
+              <button
+                @click="openEditor(song.uid)"
+                class="ml-4 bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full p-2 transition shadow"
+                title="Éditer"
+              >
+                <img :src="EditIcon" alt="Edit" class="w-7 h-5 rounded shadow-sm" />
+              </button>
             </div>
           </div>
         </div>

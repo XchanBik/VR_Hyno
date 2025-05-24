@@ -4,7 +4,6 @@ import SongList from '@/components/editor/song/SongList.vue'
 import SongEditor from '@/components/editor/song/SongEditor.vue'
 
 const nav = useNavigationStore()
-console.log('Current nav.path:', nav.path)
 </script>
 
 <template>

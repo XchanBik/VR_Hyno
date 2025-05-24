@@ -5,7 +5,6 @@ import { useNavigationStore } from '@/store/navigation'
 import flagGB from '@/assets/flag-gb.svg'
 import flagFR from '@/assets/flag-fr.svg'
 import { nav, NavigationPath } from '@/navigationTree'
-
 const appStore = useAppStore()
 const navStore = useNavigationStore()
 </script>
@@ -36,19 +35,20 @@ const navStore = useNavigationStore()
             {{ t('player') }}
           </button>
           <button 
-            @click="navStore.navigateTo(nav.editor.sessions.list as NavigationPath)"
+            :disabled="navStore.path[0] === 'editor'"
+            @click="navStore.path[0] === 'editor' ? null : navStore.navigateTo(nav.editor.sessions.list as NavigationPath)"
             :class="[
               'btn',
               'rounded-full',
               'bg-brand-500',
               'text-white',
-              navStore.path[0] === 'editor' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
+              navStore.path[0] === 'editor' ? 'ring-2 ring-brand-300 scale-105 opacity-60 cursor-default' : 'bg-brand-200 text-brand-700',
               'hover:bg-brand-600',
               'transition-all duration-150',
               'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'
             ]"
           >
-            {{ t('editor') }}
+          {{ t('editor') }}
           </button>
         </div>
         <div class="flex items-center space-x-2 ml-4">

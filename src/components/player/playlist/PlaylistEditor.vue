@@ -62,6 +62,9 @@ watch(uid, load)
 
 <template>
   <div class="bg-brand-50 rounded-xl p-6 pt-16 shadow-lg relative">
+    <div class="absolute top-4 right-4 text-xs text-brand-300 font-mono opacity-70 select-all z-10">
+      UID: {{ uid }}
+    </div>
     <button @click="navStore.navigateTo(nav.player.playlist.list as NavigationPath)" class="absolute top-4 left-4 bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full px-4 py-2 font-bold shadow transition flex items-center gap-2">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
       Back
@@ -70,7 +73,6 @@ watch(uid, load)
     <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
     <div v-else-if="info">
       <div class="mb-4">
-        <div class="text-xs text-brand-400 mb-1">UID: <span class="font-mono">{{ uid }}</span></div>
         <label class="block mb-2 font-bold text-brand-700">{{ t('playlistName') }}
           <input v-model="info.name" class="rounded-full px-4 py-2 border border-brand-200 focus:ring-2 focus:ring-brand-400 outline-none w-full mt-1" />
         </label>

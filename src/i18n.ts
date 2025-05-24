@@ -22,9 +22,12 @@ const messages = {
     sessions: 'Sessions',
     songs: 'Songs',
     addSong: 'Add Song',
+    songName: 'Song name',
     noSongs: 'No songs',
     noSongsDesc: 'Add your first song to get started',
     duration: 'Duration',
+    tags: 'Tags',
+    back: 'Back',
   },
   fr: {
     appTitle: 'VR Hypno',
@@ -45,9 +48,12 @@ const messages = {
     sessions: 'Sessions',
     songs: 'Chansons',
     addSong: 'Ajouter une chanson',
+    songName: 'Nom de la chanson',
     noSongs: 'Aucune chanson',
     noSongsDesc: 'Ajoutez votre première chanson pour commencer',
     duration: 'Durée',
+    tags: 'Tags',
+    back: 'Retour',
   }
 }
 

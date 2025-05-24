@@ -3,17 +3,9 @@ import { ref, onMounted } from 'vue'
 import { t } from '@/i18n'
 import { useNavigationStore } from '@/store/navigation'
 import { nav, NavigationPath, PlaylistUidOption } from '@/navigationTree'
+import type { Playlist } from '@/types/playlist'
 
-interface PlaylistInfo {
-  uid: string
-  info: {
-    name: string
-    repeat: boolean
-    sessions: string[]
-  }
-}
-
-const playlists = ref<PlaylistInfo[]>([])
+const playlists = ref<Playlist[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
