@@ -13,6 +13,8 @@ const error = ref<string | null>(null)
 const info = ref<SongInfo | null>(null)
 const saving = ref(false)
 const saveError = ref<string | null>(null)
+const newTag = ref('')
+const newTrigger = ref('')
 
 async function load() {
   if (!uid.value) return
@@ -42,10 +44,10 @@ async function save() {
       uid: uid.value,
       info: JSON.parse(JSON.stringify(info.value))
     }
-    const result = await window.electronAPI?.updatePlaylist?.(payload)
+    const result = await window.electronAPI?.updateSong?.(payload)
     // @ts-ignore
     if (result?.success) {
-      navStore.navigateTo(nav.player.playlist.list as NavigationPath)
+      navStore.navigateTo(nav.editor.songs.list as NavigationPath)
     } else {
       saveError.value = result?.error || t('unknownError')
     }
@@ -54,6 +56,33 @@ async function save() {
   } finally {
     saving.value = false
   }
+}
+
+function addTag() {
+  if (!info.value || !newTag.value.trim()) return
+  if (!info.value.tags) info.value.tags = []
+  const tag = newTag.value.trim()
+  if (!info.value.tags.includes(tag)) {
+    info.value.tags.push(tag)
+  }
+  newTag.value = ''
+}
+function removeTag(tag: string) {
+  if (!info.value || !info.value.tags) return
+  info.value.tags = info.value.tags.filter(t => t !== tag)
+}
+function addTrigger() {
+  if (!info.value || !newTrigger.value.trim()) return
+  if (!info.value.triggers) info.value.triggers = []
+  const trig = newTrigger.value.trim()
+  if (!info.value.triggers.includes(trig)) {
+    info.value.triggers.push(trig)
+  }
+  newTrigger.value = ''
+}
+function removeTrigger(trig: string) {
+  if (!info.value || !info.value.triggers) return
+  info.value.triggers = info.value.triggers.filter(t => t !== trig)
 }
 
 onMounted(load)
@@ -78,14 +107,30 @@ watch(uid, load)
         </label>
       </div>
       <div class="mb-4">
-        <div class="font-bold text-brand-700 mb-2">{{ t('tags') }}</div>
-        <ul class="space-y-1">
-          <li v-for="(tag, idx) in info.tags" class="flex items-center gap-2">
-            <span class="bg-brand-200 rounded px-2 py-1 text-brand-700 text-xs">{{ tag }}</span>
-            <!-- TODO: drag & drop, remove, reorder -->
+        <div class="font-bold text-brand-700 mb-2">Tags</div>
+        <ul class="flex flex-wrap gap-2 mb-2">
+          <li v-for="tag in info.tags || []" :key="tag" class="flex items-center bg-brand-200 rounded px-2 py-1 text-brand-700 text-xs">
+            <span>{{ tag }}</span>
+            <button @click="removeTag(tag)" class="ml-1 text-brand-500 hover:text-red-500 font-bold text-xs">&times;</button>
           </li>
         </ul>
-        <!-- TODO: add session, reorder, etc. -->
+        <div class="flex gap-2">
+          <input v-model="newTag" @keyup.enter="addTag" placeholder="Add tag" class="rounded-full px-3 py-1 border border-brand-200 focus:ring-2 focus:ring-brand-400 outline-none text-sm" />
+          <button @click="addTag" class="bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full px-3 py-1 font-bold text-sm">+</button>
+        </div>
+      </div>
+      <div class="mb-4">
+        <div class="font-bold text-brand-700 mb-2">Triggers</div>
+        <ul class="flex flex-wrap gap-2 mb-2">
+          <li v-for="trig in info.triggers || []" :key="trig" class="flex items-center bg-brand-200 rounded px-2 py-1 text-brand-700 text-xs">
+            <span>{{ trig }}</span>
+            <button @click="removeTrigger(trig)" class="ml-1 text-brand-500 hover:text-red-500 font-bold text-xs">&times;</button>
+          </li>
+        </ul>
+        <div class="flex gap-2">
+          <input v-model="newTrigger" @keyup.enter="addTrigger" placeholder="Add trigger" class="rounded-full px-3 py-1 border border-brand-200 focus:ring-2 focus:ring-brand-400 outline-none text-sm" />
+          <button @click="addTrigger" class="bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full px-3 py-1 font-bold text-sm">+</button>
+        </div>
       </div>
       <div v-if="saveError" class="text-center text-red-500 mb-2">{{ saveError }}</div>
       <div class="flex gap-2 mt-4">

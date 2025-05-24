@@ -5,7 +5,6 @@ import SongManager from '@/components/editor/song/SongManager.vue'
 import AssetManager from '@/components/editor/assets/AssetManager.vue'
 
 const nav = useNavigationStore()
-console.log('Current nav.path:', nav.path)
 </script>
 
 <template>
