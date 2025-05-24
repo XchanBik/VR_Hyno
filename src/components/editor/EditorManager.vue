@@ -1,25 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAppStore } from '@/store/app'
 import SessionManager from '@/components/editor/session/SessionManager.vue'
 import SongManager from '@/components/editor/song/SongManager.vue'
+// (AssetManager à ajouter plus tard)
 
-const view = ref<'sessions' | 'songs'>('sessions')
-
-function showSessions() {
-  view.value = 'sessions'
-}
-function showSongs() {
-  view.value = 'songs'
-}
+const appStore = useAppStore()
+const { editorSection, editorSidebarCollapsed } = storeToRefs(appStore)
 </script>
 
 <template>
-  <div>
-    <div class="flex gap-4 mb-6">
-      <button @click="showSessions" :class="['btn', 'rounded-full', view === 'sessions' ? 'bg-bimbo-500 text-white' : 'bg-bimbo-200 text-bimbo-700', 'px-6 py-2 font-bold shadow']">Sessions</button>
-      <button @click="showSongs" :class="['btn', 'rounded-full', view === 'songs' ? 'bg-bimbo-500 text-white' : 'bg-bimbo-200 text-bimbo-700', 'px-6 py-2 font-bold shadow']">Songs</button>
+  <div class="w-full h-full">
+    <SessionManager v-if="editorSection === 'sessions'" />
+    <SongManager v-else-if="editorSection === 'songs'" />
+    <div v-else class="bg-bimbo-50 rounded-xl p-8 shadow-lg text-center text-bimbo-700">
+      <div class="text-2xl font-bold mb-2">Asset Manager</div>
+      <div class="text-bimbo-400">(Assets placeholder)</div>
     </div>
-    <SessionManager v-if="view === 'sessions'" />
-    <SongManager v-else />
   </div>
 </template> 
