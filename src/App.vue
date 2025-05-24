@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import Header from '@/components/Header.vue'
 import PlayerManager from '@/components/player/PlayerManager.vue'
 import EditorManager from '@/components/editor/EditorManager.vue'
-import SideBarEditor from '@/components/editor/EditorSidebar.vue'
-import { useAppStore } from '@/store/app'
+import EditorSidebar from '@/components/editor/EditorSidebar.vue'
+import { useNavigationStore } from './store/navigation'
 
-const appStore = useAppStore()
+const nav = useNavigationStore()
 </script>
 
 <template>
@@ -17,14 +18,13 @@ const appStore = useAppStore()
 
     <!-- CONTENT GRID -->
     <div class="flex-1 flex min-h-0">
-      <!-- LEFT SIDEBAR - Seulement en mode Editor -->
-      <SideBarEditor v-if="appStore.currentView === 'editor'" />
-
+      <!-- LEFT SIDEBAR -->
+      <EditorSidebar v-if="nav.path[0] === 'editor'" />
       <!-- RIGHT CONTENT -->
       <div class="flex-1 min-w-0" style="background: #51e898;">
         <div class="h-full w-full">
-          <PlayerManager v-if="appStore.currentView === 'player'" />
-          <EditorManager v-else />
+          <PlayerManager v-if="nav.path[0] === 'player'" />
+          <EditorManager v-else-if="nav.path[0] === 'editor'" />
         </div>
       </div>
     </div>

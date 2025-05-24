@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { t } from '../i18n'
 import { useAppStore } from '../store/app'
+import { useNavigationStore } from '@/store/navigation'
 import flagGB from '@/assets/flag-gb.svg'
 import flagFR from '@/assets/flag-fr.svg'
 
 const appStore = useAppStore()
+const nav = useNavigationStore()
 </script>
 
 <template>
@@ -18,13 +20,13 @@ const appStore = useAppStore()
             </svg>
           </span>
           <button 
-            @click="appStore.setView('player')"
+            @click="nav.navigateTo(['player','playlist','list'])"
             :class="[
               'btn',
               'rounded-full',
               'bg-brand-500',
               'text-white',
-              appStore.currentView === 'player' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
+              nav.path[0] === 'player' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
               'hover:bg-brand-600',
               'transition-all duration-150',
               'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'
@@ -33,13 +35,13 @@ const appStore = useAppStore()
             {{ t('player') }}
           </button>
           <button 
-            @click="appStore.setView('editor')"
+            @click="nav.navigateTo(['editor','sessions','list'])"
             :class="[
               'btn',
               'rounded-full',
               'bg-brand-500',
               'text-white',
-              appStore.currentView === 'editor' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
+              nav.path[0] === 'editor' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
               'hover:bg-brand-600',
               'transition-all duration-150',
               'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'

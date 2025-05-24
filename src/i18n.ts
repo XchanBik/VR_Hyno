@@ -20,6 +20,11 @@ const messages = {
     no: 'No',
     save: 'Save',
     sessions: 'Sessions',
+    songs: 'Songs',
+    addSong: 'Add Song',
+    noSongs: 'No songs',
+    noSongsDesc: 'Add your first song to get started',
+    duration: 'Duration',
   },
   fr: {
     appTitle: 'VR Hypno',
@@ -30,7 +35,7 @@ const messages = {
     createPlaylist: 'Créer une playlist',
     playlistName: 'Nom de la playlist',
     repeat: 'Répéter',
-    noPlaylists: 'Aucune playlist pour l’instant. Cliquez sur + pour en créer une !',
+    noPlaylists: 'Aucune playlist pour l\'instant. Cliquez sur + pour en créer une !',
     loading: 'Chargement des playlists...',
     unknownError: 'Erreur inconnue',
     cancel: 'Annuler',
@@ -38,6 +43,11 @@ const messages = {
     no: 'Non',
     save: 'Enregistrer',
     sessions: 'Sessions',
+    songs: 'Chansons',
+    addSong: 'Ajouter une chanson',
+    noSongs: 'Aucune chanson',
+    noSongsDesc: 'Ajoutez votre première chanson pour commencer',
+    duration: 'Durée',
   }
 }
 

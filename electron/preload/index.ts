@@ -36,7 +36,7 @@ contextBridge.exposeInMainWorld(
     // SONGS
     getSongs: () => ipcRenderer.invoke('get-songs'),
     getSong: (uid: string) => ipcRenderer.invoke('get-song', uid),
-    createSong: (data: { info: any }) => ipcRenderer.invoke('create-song', data),
+    addSong: () => ipcRenderer.invoke('add-song'),
     updateSong: (data: { uid: string; info: any }) => ipcRenderer.invoke('update-song', data),
     // SESSIONS
     getSessions: () => ipcRenderer.invoke('get-sessions'),

@@ -38,9 +38,8 @@ interface ElectronAPI {
     song?: any
     error?: string
   }>
-  createSong: (data: { info: any }) => Promise<{
+  addSong: () => Promise<{
     success: boolean
-    song?: any
     error?: string
   }>
   updateSong: (data: { uid: string; info: any }) => Promise<{

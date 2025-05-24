@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useAppStore } from '@/store/app'
+import { useNavigationStore } from '@/store/navigation'
 import SessionManager from '@/components/editor/session/SessionManager.vue'
 import SongManager from '@/components/editor/song/SongManager.vue'
 import AssetManager from '@/components/editor/assets/AssetManager.vue'
 
-const appStore = useAppStore()
-const { editorSection, editorSidebarCollapsed } = storeToRefs(appStore)
+const nav = useNavigationStore()
 </script>
 
 <template>
   <div class="w-full h-full">
-    <SessionManager v-if="editorSection === 'sessions'" />
-    <SongManager v-else-if="editorSection === 'songs'" />
-    <AssetManager v-else-if="editorSection === 'assets'" />
+    <SessionManager v-if="nav.path[1] === 'sessions'" />
+    <SongManager v-else-if="nav.path[1] === 'songs'" />
+    <AssetManager v-else-if="nav.path[1] === 'assets'" />
   </div>
 </template>
