@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia'
-import { NavigationPath } from '@/navigationTree'
+import type { NavigationPath } from '@/navigationTree'
+import { nav } from '@/navigationTree'
 
 export const useNavigationStore = defineStore('navigation', {
   state: () => ({
-    path: ['player', 'playlist', 'list'] as NavigationPath,
-    selectedUid: null as string | null,
+    path: nav.player.playlist.list as NavigationPath,
+    options: {} as any,
   }),
   actions: {
-    navigateTo(path: readonly string[], uid?: string | null) {
+    navigateTo(path: NavigationPath, options?: any) {
       this.path = [...path] as NavigationPath
-      this.selectedUid = uid ?? null
+      this.options = options ?? {}
     }
   }
 }) 

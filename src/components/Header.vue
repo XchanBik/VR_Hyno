@@ -4,7 +4,7 @@ import { useAppStore } from '../store/app'
 import { useNavigationStore } from '@/store/navigation'
 import flagGB from '@/assets/flag-gb.svg'
 import flagFR from '@/assets/flag-fr.svg'
-import { nav } from '@/navigationTree'
+import { nav, NavigationPath } from '@/navigationTree'
 
 const appStore = useAppStore()
 const navStore = useNavigationStore()
@@ -21,7 +21,7 @@ const navStore = useNavigationStore()
             </svg>
           </span>
           <button 
-            @click="navStore.navigateTo(nav.player.playlist.list)"
+            @click="navStore.navigateTo(nav.player.playlist.list as NavigationPath)"
             :class="[
               'btn',
               'rounded-full',
@@ -36,7 +36,7 @@ const navStore = useNavigationStore()
             {{ t('player') }}
           </button>
           <button 
-            @click="navStore.navigateTo(nav.editor.sessions.list)"
+            @click="navStore.navigateTo(nav.editor.sessions.list as NavigationPath)"
             :class="[
               'btn',
               'rounded-full',

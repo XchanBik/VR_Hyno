@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { t } from '@/i18n'
-import PlaylistEditor from '@/components/player/playlist/PlaylistEditor.vue'
 import { useNavigationStore } from '@/store/navigation'
-import { nav } from '@/navigationTree'
+import { nav, NavigationPath, PlaylistUidOption } from '@/navigationTree'
 
 interface PlaylistInfo {
   uid: string
@@ -22,11 +21,8 @@ const showCreate = ref(false)
 const newPlaylistName = ref('')
 const newPlaylistRepeat = ref(false)
 const creating = ref(false)
-const editingPlaylistUid = ref<string | null>(null)
 
 const navStore = useNavigationStore()
-
-const emit = defineEmits(['edit', 'play'])
 
 async function loadPlaylists() {
   loading.value = true
@@ -47,7 +43,7 @@ async function loadPlaylists() {
 }
 
 function openEditor(uid: string) {
-  navStore.navigateTo(nav.player.playlist.edit, uid)
+  navStore.navigateTo(nav.player.playlist.edit as NavigationPath, { uid } as PlaylistUidOption)
 }
 
 async function createPlaylist() {
@@ -59,23 +55,19 @@ async function createPlaylist() {
       repeat: false,
       sessions: []
     })
-    console.log('IPC createPlaylist result:', result)
     if (result?.success) {
       newPlaylistName.value = ''
       newPlaylistRepeat.value = false
       showCreate.value = false
       await loadPlaylists()
-      openEditor(result.playlist.uid)
+      navStore.navigateTo(nav.player.playlist.edit as NavigationPath, { uid: result.playlist.uid })
     } else {
       error.value = result?.error || t('unknownError')
-      console.error('Playlist creation error:', error.value)
     }
   } catch (e) {
     error.value = (e as Error).message
-    console.error('Exception in createPlaylist:', e)
   } finally {
     creating.value = false
-    console.log('createPlaylist finished')
   }
 }
 
@@ -121,12 +113,8 @@ onMounted(loadPlaylists)
 
     <!-- Contenu principal -->
     <div class="flex-1">
-      <!-- Éditeur de playlist -->
-      <div v-if="editingPlaylistUid" class="bg-brand-50/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 mb-6">
-        <PlaylistEditor :uid="editingPlaylistUid" @close="editingPlaylistUid = null; loadPlaylists()" />
-      </div>
       <!-- Liste des playlists -->
-      <div v-else>
+      <div>
         <!-- États de chargement et d'erreur -->
         <div v-if="loading" class="flex items-center justify-center py-10">
           <div class="text-center">
@@ -238,7 +226,7 @@ onMounted(loadPlaylists)
                     {{ playlist.info.sessions.length }} session{{ playlist.info.sessions.length !== 1 ? 's' : '' }}
                   </div>
                   <button 
-                    @click="navStore.navigateTo(nav.player.playlist.player, playlist.uid)"
+                    @click="navStore.navigateTo(nav.player.playlist.player as NavigationPath, { uid: playlist.uid })"
                     class="bg-gradient-to-r from-brand-500 to-brand-700 hover:from-brand-600 hover:to-brand-800 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-110 border-2 border-brand-200"
                     title="Lire"
                   >
