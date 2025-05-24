@@ -22,7 +22,7 @@ function toggleSidebar() {
 </script>
 
 <template>
-  <aside :class="['flex-1 h-full min-h-0 flex flex-col bg-bimbo-100 shadow-xl transition-all duration-300', collapsed ? 'w-20' : 'w-56']">
+  <aside :class="['flex-shrink-0 h-full min-h-0 flex flex-col bg-bimbo-100 shadow-xl transition-all duration-300', collapsed ? 'w-15' : 'w-56']">
     <button @click="toggleSidebar" class="mt-4 mb-2 ml-auto mr-2 bg-bimbo-200 hover:bg-bimbo-300 text-bimbo-700 rounded-full p-2 shadow transition flex items-center" :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
       <svg :class="['w-6 h-6 transition-transform']" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path v-if="collapsed" d="M9 5l7 7-7 7" />

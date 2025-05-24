@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '@/store/app'
 import SessionManager from '@/components/editor/session/SessionManager.vue'
 import SongManager from '@/components/editor/song/SongManager.vue'
+import AssetManager from '@/components/editor/assets/AssetManager.vue'
 
 const appStore = useAppStore()
 const { editorSection, editorSidebarCollapsed } = storeToRefs(appStore)
@@ -12,11 +13,6 @@ const { editorSection, editorSidebarCollapsed } = storeToRefs(appStore)
   <div class="w-full h-full">
     <SessionManager v-if="editorSection === 'sessions'" />
     <SongManager v-else-if="editorSection === 'songs'" />
-    <div v-else class="w-full h-full flex items-center justify-center">
-      <div class="bg-bimbo-50 rounded-xl p-8 shadow-lg text-center text-bimbo-700">
-        <div class="text-2xl font-bold mb-2">Asset Manager</div>
-        <div class="text-bimbo-400">(Assets placeholder)</div>
-      </div>
-    </div>
+    <AssetManager v-else-if="editorSection === 'assets'" />
   </div>
 </template>
