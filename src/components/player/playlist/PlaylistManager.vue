@@ -88,52 +88,54 @@ onMounted(loadPlaylists)
 </script>
 
 <template>
-  <div class="w-full max-w-xl mx-auto bg-white rounded-xl shadow-lg p-8 mt-8 relative">
-    <h2 class="text-2xl font-bold text-bimbo-700 mb-6 flex items-center gap-2">
-      <svg class="w-7 h-7 text-bimbo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" /><path d="M8 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-      {{ t('playlists') }}
-      <button @click="openCreate" class="ml-auto bg-bimbo-500 hover:bg-bimbo-600 text-white rounded-full w-9 h-9 flex items-center justify-center shadow transition absolute right-8 top-8" :title="t('addPlaylist')">
-        <span class="text-2xl leading-none">+</span>
-      </button>
-    </h2>
-    <div v-if="editingPlaylistUid">
-      <PlaylistEditor :uid="editingPlaylistUid" @close="editingPlaylistUid = null; loadPlaylists()" />
-    </div>
-    <div v-else>
-      <div v-if="loading" class="text-center py-8 text-bimbo-400">{{ t('loading') }}</div>
-      <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
-      <div v-else>
-        <div v-if="playlists.length === 0" class="text-center py-8 text-bimbo-400">
-          {{ t('noPlaylists') }}
-        </div>
-        <ul v-else class="space-y-4 mb-8">
-          <li v-for="playlist in playlists" :key="playlist.uid" class="bg-bimbo-50 rounded-lg px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <button class="bg-bimbo-500 hover:bg-bimbo-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow transition text-2xl" title="Play" @click="appStore.setPlayerView('play', playlist.uid)">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              </button>
-              <div>
-                <div class="font-bold text-bimbo-700 text-lg">{{ playlist.info.name }}</div>
-                <div class="text-xs text-bimbo-500">{{ t('repeat') }}: <span v-if="playlist.info.repeat">{{ t('yes') }}</span><span v-else>{{ t('no') }}</span></div>
-              </div>
-            </div>
-            <button @click="openEditor(playlist.uid)" class="ml-2 bg-bimbo-200 hover:bg-bimbo-300 text-bimbo-700 rounded-full w-9 h-9 flex items-center justify-center shadow transition" title="Edit">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"/></svg>
-            </button>
-          </li>
-        </ul>
+  <div class="w-full h-full bg-white p-8 rounded-xl shadow-lg flex items-center justify-center">
+    <div class="w-full max-w-xl mx-auto bg-white rounded-xl shadow-lg p-8 mt-8 relative">
+      <h2 class="text-2xl font-bold text-bimbo-700 mb-6 flex items-center gap-2">
+        <svg class="w-7 h-7 text-bimbo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" /><path d="M8 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        {{ t('playlists') }}
+        <button @click="openCreate" class="ml-auto bg-bimbo-500 hover:bg-bimbo-600 text-white rounded-full w-9 h-9 flex items-center justify-center shadow transition absolute right-8 top-8" :title="t('addPlaylist')">
+          <span class="text-2xl leading-none">+</span>
+        </button>
+      </h2>
+      <div v-if="editingPlaylistUid">
+        <PlaylistEditor :uid="editingPlaylistUid" @close="editingPlaylistUid = null; loadPlaylists()" />
       </div>
-      <form v-if="showCreate" @submit.prevent="createPlaylist" class="flex flex-col gap-4 mb-2 mt-2 bg-bimbo-50 rounded-lg p-4 shadow">
-        <input v-model="newPlaylistName" type="text" :placeholder="t('playlistName')" class="rounded-full px-4 py-2 border border-bimbo-200 focus:ring-2 focus:ring-bimbo-400 outline-none" />
-        <div class="flex gap-2">
-          <button type="submit" class="btn rounded-full px-6 py-2 shadow bg-bimbo-500 text-white hover:bg-bimbo-600 transition font-bold tracking-wide uppercase" :disabled="creating">
-            {{ t('createPlaylist') }}
-          </button>
-          <button type="button" @click="showCreate = false" class="btn rounded-full px-6 py-2 shadow bg-bimbo-200 text-bimbo-700 hover:bg-bimbo-300 transition font-bold tracking-wide uppercase">
-            {{ t('cancel') }}
-          </button>
+      <div v-else>
+        <div v-if="loading" class="text-center py-8 text-bimbo-400">{{ t('loading') }}</div>
+        <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
+        <div v-else>
+          <div v-if="playlists.length === 0" class="text-center py-8 text-bimbo-400">
+            {{ t('noPlaylists') }}
+          </div>
+          <ul v-else class="space-y-4 mb-8">
+            <li v-for="playlist in playlists" :key="playlist.uid" class="bg-bimbo-50 rounded-lg px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <button class="bg-bimbo-500 hover:bg-bimbo-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow transition text-2xl" title="Play" @click="appStore.setPlayerView('play', playlist.uid)">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+                <div>
+                  <div class="font-bold text-bimbo-700 text-lg">{{ playlist.info.name }}</div>
+                  <div class="text-xs text-bimbo-500">{{ t('repeat') }}: <span v-if="playlist.info.repeat">{{ t('yes') }}</span><span v-else>{{ t('no') }}</span></div>
+                </div>
+              </div>
+              <button @click="openEditor(playlist.uid)" class="ml-2 bg-bimbo-200 hover:bg-bimbo-300 text-bimbo-700 rounded-full w-9 h-9 flex items-center justify-center shadow transition" title="Edit">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"/></svg>
+              </button>
+            </li>
+          </ul>
         </div>
-      </form>
+        <form v-if="showCreate" @submit.prevent="createPlaylist" class="flex flex-col gap-4 mb-2 mt-2 bg-bimbo-50 rounded-lg p-4 shadow">
+          <input v-model="newPlaylistName" type="text" :placeholder="t('playlistName')" class="rounded-full px-4 py-2 border border-bimbo-200 focus:ring-2 focus:ring-bimbo-400 outline-none" />
+          <div class="flex gap-2">
+            <button type="submit" class="btn rounded-full px-6 py-2 shadow bg-bimbo-500 text-white hover:bg-bimbo-600 transition font-bold tracking-wide uppercase" :disabled="creating">
+              {{ t('createPlaylist') }}
+            </button>
+            <button type="button" @click="showCreate = false" class="btn rounded-full px-6 py-2 shadow bg-bimbo-200 text-bimbo-700 hover:bg-bimbo-300 transition font-bold tracking-wide uppercase">
+              {{ t('cancel') }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template> 

@@ -20,11 +20,11 @@ function showPlayer(uid: string) {
 </script>
 
 <template>
-  <div class="w-full h-full flex items-center justify-center">
+  <div class="w-full h-full bg-bimbo-50 rounded-xl shadow-lg flex items-center justify-center">
     <div>
       <PlaylistManager v-if="playerView === 'list'" />
       <PlaylistEditor v-else-if="playerView === 'edit'" :uid="selectedPlaylistUid!" @close="showList" />
       <PlaylistPlayer v-else-if="playerView === 'play'" :uid="selectedPlaylistUid!" @close="showList" />
     </div>
   </div>
-</template> 
+</template>
