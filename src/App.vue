@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import Header from './components/Header.vue'
+import PlayerManager from '@/components/player/PlayerManager.vue'
+import EditorManager from '@/components/editor/EditorManager.vue'
+import { useAppStore } from './store/app'
 const collapsed = ref(false)
+const appStore = useAppStore()
 </script>
 
 <template>
   <div class="h-screen flex flex-col overflow-hidden">
     <!-- HEADER SECTION -->
     <div class="w-full h-20 flex-shrink-0" style="background: #ff4dd2;">
-      <div class="h-full flex items-center justify-center">
-        <!-- COMPOSANT FUTUR HEADER -->
-        <div class="text-white text-2xl font-bold">HEADER COMPONENT</div>
-      </div>
+      <Header />
     </div>
 
     <!-- CONTENT GRID -->
@@ -48,14 +50,9 @@ const collapsed = ref(false)
 
       <!-- RIGHT CONTENT -->
       <div class="flex-1 min-w-0" style="background: #51e898;">
-        <div class="h-full w-full p-6">
-          <!-- COMPOSANT ROUTER VIEW -->
-          <div class="text-white text-3xl font-bold mb-4">
-            ROUTER VIEW COMPONENT
-          </div>
-          <div class="text-white text-lg">
-            Contenu principal qui prend toute la hauteur disponible
-          </div>
+        <div class="h-full w-full">
+          <PlayerManager v-if="appStore.currentView === 'player'" />
+          <EditorManager v-else />
         </div>
       </div>
     </div>
