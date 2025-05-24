@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { t } from '@/i18n'
 import PlaylistEditor from '@/components/player/playlist/PlaylistEditor.vue'
 import { useNavigationStore } from '@/store/navigation'
+import { nav } from '@/navigationTree'
 
 interface PlaylistInfo {
   uid: string
@@ -23,7 +24,7 @@ const newPlaylistRepeat = ref(false)
 const creating = ref(false)
 const editingPlaylistUid = ref<string | null>(null)
 
-const nav = useNavigationStore()
+const navStore = useNavigationStore()
 
 const emit = defineEmits(['edit', 'play'])
 
@@ -46,7 +47,7 @@ async function loadPlaylists() {
 }
 
 function openEditor(uid: string) {
-  nav.navigateTo(['player','playlist','edit'], uid)
+  navStore.navigateTo(nav.player.playlist.edit, uid)
 }
 
 async function createPlaylist() {
@@ -237,7 +238,7 @@ onMounted(loadPlaylists)
                     {{ playlist.info.sessions.length }} session{{ playlist.info.sessions.length !== 1 ? 's' : '' }}
                   </div>
                   <button 
-                    @click="nav.navigateTo(['player','playlist','play'], playlist.uid)"
+                    @click="navStore.navigateTo(nav.player.playlist.player, playlist.uid)"
                     class="bg-gradient-to-r from-brand-500 to-brand-700 hover:from-brand-600 hover:to-brand-800 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-110 border-2 border-brand-200"
                     title="Lire"
                   >

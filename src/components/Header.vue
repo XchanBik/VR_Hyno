@@ -4,9 +4,10 @@ import { useAppStore } from '../store/app'
 import { useNavigationStore } from '@/store/navigation'
 import flagGB from '@/assets/flag-gb.svg'
 import flagFR from '@/assets/flag-fr.svg'
+import { nav } from '@/navigationTree'
 
 const appStore = useAppStore()
-const nav = useNavigationStore()
+const navStore = useNavigationStore()
 </script>
 
 <template>
@@ -20,13 +21,13 @@ const nav = useNavigationStore()
             </svg>
           </span>
           <button 
-            @click="nav.navigateTo(['player','playlist','list'])"
+            @click="navStore.navigateTo(nav.player.playlist.list)"
             :class="[
               'btn',
               'rounded-full',
               'bg-brand-500',
               'text-white',
-              nav.path[0] === 'player' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
+              navStore.path[0] === 'player' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
               'hover:bg-brand-600',
               'transition-all duration-150',
               'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'
@@ -35,13 +36,13 @@ const nav = useNavigationStore()
             {{ t('player') }}
           </button>
           <button 
-            @click="nav.navigateTo(['editor','sessions','list'])"
+            @click="navStore.navigateTo(nav.editor.sessions.list)"
             :class="[
               'btn',
               'rounded-full',
               'bg-brand-500',
               'text-white',
-              nav.path[0] === 'editor' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
+              navStore.path[0] === 'editor' ? 'ring-2 ring-brand-300 scale-105' : 'bg-brand-200 text-brand-700',
               'hover:bg-brand-600',
               'transition-all duration-150',
               'text-base px-6 py-2 shadow-lg font-bold tracking-wide uppercase'

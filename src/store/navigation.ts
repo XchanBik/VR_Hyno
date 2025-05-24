@@ -7,8 +7,8 @@ export const useNavigationStore = defineStore('navigation', {
     selectedUid: null as string | null,
   }),
   actions: {
-    navigateTo(path: NavigationPath, uid?: string | null) {
-      this.path = path
+    navigateTo(path: readonly string[], uid?: string | null) {
+      this.path = [...path] as NavigationPath
       this.selectedUid = uid ?? null
     }
   }
