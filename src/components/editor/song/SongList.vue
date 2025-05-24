@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { t } from '@/i18n'
 import { useNavigationStore } from '@/store/navigation'
 import { nav, NavigationPath } from '@/navigationTree'
@@ -13,6 +13,42 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 
 const navStore = useNavigationStore()
+
+const selectedTags = ref<string[]>([])
+const selectedTriggers = ref<string[]>([])
+
+const allTags = computed(() => {
+  const tags = new Set<string>()
+  for (const song of songs.value) {
+    if (song.info.tags) song.info.tags.forEach(t => tags.add(t))
+  }
+  return Array.from(tags).sort()
+})
+const allTriggers = computed(() => {
+  const triggers = new Set<string>()
+  for (const song of songs.value) {
+    if (song.info.triggers) song.info.triggers.forEach(t => triggers.add(t))
+  }
+  return Array.from(triggers).sort()
+})
+
+const filteredSongs = computed(() => {
+  return songs.value.filter(song => {
+    // Filtre tags
+    if (selectedTags.value.length > 0) {
+      if (!song.info.tags || !selectedTags.value.every(tag => song.info.tags!.includes(tag))) {
+        return false
+      }
+    }
+    // Filtre triggers
+    if (selectedTriggers.value.length > 0) {
+      if (!song.info.triggers || !selectedTriggers.value.every(trig => song.info.triggers!.includes(trig))) {
+        return false
+      }
+    }
+    return true
+  })
+})
 
 async function loadSongs() {
   loading.value = true
@@ -78,6 +114,34 @@ onMounted(loadSongs)
       </button>
     </div>
 
+    <!-- Filtres tags/triggers -->
+    <div class="mb-6">
+      <div v-if="allTags.length" class="flex flex-wrap items-center gap-2 mb-2">
+        <span class="font-bold text-brand-700">Tags:</span>
+        <button v-for="tag in allTags" :key="tag"
+          @click="selectedTags = selectedTags.includes(tag) ? selectedTags.filter(t => t !== tag) : [...selectedTags, tag]"
+          :class="[
+            'px-3 py-1 rounded-full font-bold text-sm border-2 transition',
+            selectedTags.includes(tag)
+              ? 'bg-brand-500 text-white border-brand-500 shadow'
+              : 'bg-brand-100 text-brand-700 border-brand-200 hover:bg-brand-200'
+          ]"
+        >{{ tag }}</button>
+      </div>
+      <div v-if="allTriggers.length" class="flex flex-wrap items-center gap-2">
+        <span class="font-bold text-brand-700">Triggers:</span>
+        <button v-for="trig in allTriggers" :key="trig"
+          @click="selectedTriggers = selectedTriggers.includes(trig) ? selectedTriggers.filter(t => t !== trig) : [...selectedTriggers, trig]"
+          :class="[
+            'px-3 py-1 rounded-full font-bold text-sm border-2 transition',
+            selectedTriggers.includes(trig)
+              ? 'bg-brand-500 text-white border-brand-500 shadow'
+              : 'bg-brand-100 text-brand-700 border-brand-200 hover:bg-brand-200'
+          ]"
+        >{{ trig }}</button>
+      </div>
+    </div>
+
     <!-- Contenu principal -->
     <div class="flex-1">
       <!-- Liste des playlists -->
@@ -111,7 +175,7 @@ onMounted(loadSongs)
           <!-- Grille des playlists -->
           <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <div 
-              v-for="song in songs" 
+              v-for="song in filteredSongs" 
               :key="song.uid" 
               class="bg-brand-50 rounded-2xl shadow-lg px-6 py-5 mb-4 flex items-center justify-between border-2 border-brand-200"
             >
