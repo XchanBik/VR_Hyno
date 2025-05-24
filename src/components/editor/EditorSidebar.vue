@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { navigationTree } from '@/navigationTree'
+import { navigationTree, nav, NavigationPath } from '@/navigationTree'
 import { useNavigationStore } from '@/store/navigation'
 
-const nav = useNavigationStore()
+const navStore = useNavigationStore()
 const collapsed = ref(false)
 
+const sectionKeys = Object.keys(navigationTree.editor) as Array<keyof typeof navigationTree.editor>
+
 const sections = computed(() =>
-  Object.keys(navigationTree.editor).map(key => {
+  sectionKeys.map(key => {
     let icon = '📁'
     if (key === 'sessions') icon = '🧠'
     if (key === 'songs') icon = '🎵'
@@ -16,8 +18,8 @@ const sections = computed(() =>
   })
 )
 
-function selectSection(key: string) {
-  nav.navigateTo(['editor', key as keyof typeof navigationTree.editor, 'list'])
+function selectSection(key: keyof typeof navigationTree.editor) {
+  navStore.navigateTo(nav.editor[key].list as NavigationPath)
 }
 </script>
 
@@ -34,7 +36,7 @@ function selectSection(key: string) {
         @click="selectSection(section.key)"
         :class="[
           'flex items-center gap-3 px-4 py-3 rounded-full font-bold transition-all',
-          nav.path[1] === section.key ? 'bg-brand-500 text-white shadow-lg scale-105' : 'bg-brand-200 text-brand-700 hover:bg-brand-300',
+          navStore.path[1] === section.key ? 'bg-brand-500 text-white shadow-lg scale-105' : 'bg-brand-200 text-brand-700 hover:bg-brand-300',
           collapsed ? 'justify-center px-2' : 'justify-start'
         ]"
         :title="section.label"
