@@ -1,7 +1,11 @@
+export interface SessionInfo {
+    name: string;
+    song_uid: string;
+    description?: string;
+}
+  
+// Pour l'usage UI/backend :
 export interface Session {
   uid: string;
-  name: string;
-  description?: string;
-  songUid: string;
-  vrConfig: Record<string, any>;
+  info: SessionInfo;
 } 

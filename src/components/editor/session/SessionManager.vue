@@ -1,8 +1,14 @@
+<script setup lang="ts">
+import { useNavigationStore } from '@/store/navigation'
+import SessionList from '@/components/editor/session/SessionList.vue'
+import SessionEditor from '@/components/editor/session/SessionEditor.vue'
+
+const nav = useNavigationStore()
+</script>
+
 <template>
-    <div class="w-full h-full bg-brand-50 rounded-xl shadow-lg flex items-center justify-center">
-      <div class="text-center text-brand-700">
-        <div class="text-2xl font-bold mb-2">Session Manager</div>
-        <div class="text-brand-400">(Sessions list placeholder)</div>
-      </div>
-    </div>
+  <div class="p-4 overflow-y-auto h-full">
+    <SessionList v-if="nav.path[2] === 'list'" />
+    <SessionEditor v-else-if="nav.path[2] === 'edit'"/>
+  </div>
 </template>
