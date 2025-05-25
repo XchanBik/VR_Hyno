@@ -80,6 +80,12 @@ async function addSong() {
   }
 }
 
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
 onMounted(loadSongs)
 </script>
 
@@ -179,7 +185,10 @@ onMounted(loadSongs)
               :key="song.uid" 
               class="bg-brand-50 rounded-2xl shadow-lg px-6 py-5 mb-4 flex items-center justify-between border-2 border-brand-200"
             >
-              <span class="block font-extrabold text-lg text-brand-700 whitespace-normal break-words min-w-[120px]">{{ song.info.name }}</span>
+              <div class="flex flex-col flex-1 min-w-0">
+                <span class="block font-extrabold text-lg text-brand-700 whitespace-normal break-words min-w-[120px]">{{ song.info.name }}</span>
+                <span class="block text-xs text-brand-400 mt-1">{{ formatDuration(song.info.duration) }}</span>
+              </div>
               <button
                 @click="openEditor(song.uid)"
                 class="ml-4 bg-brand-200 hover:bg-brand-300 text-brand-700 rounded-full p-2 transition shadow"
