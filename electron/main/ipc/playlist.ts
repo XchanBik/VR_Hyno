@@ -7,17 +7,11 @@ const DATA_PATH = join(process.cwd(), 'data');
 const PLAYLISTS_PATH = join(DATA_PATH, 'playlists');
 
 async function ensurePlaylistsDirectory() {
-  console.log('[playlist] Checking DATA_PATH:', DATA_PATH);
   if (!existsSync(DATA_PATH)) {
-    console.log('[playlist] DATA_PATH does not exist, creating...');
     await mkdir(DATA_PATH, { recursive: true });
-    console.log('[playlist] DATA_PATH created');
   }
-  console.log('[playlist] Checking PLAYLISTS_PATH:', PLAYLISTS_PATH);
   if (!existsSync(PLAYLISTS_PATH)) {
-    console.log('[playlist] PLAYLISTS_PATH does not exist, creating...');
     await mkdir(PLAYLISTS_PATH, { recursive: true });
-    console.log('[playlist] PLAYLISTS_PATH created');
   }
 }
 

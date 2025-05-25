@@ -4,6 +4,8 @@ import { t } from '@/i18n'
 import { useNavigationStore } from '@/store/navigation'
 import { nav, NavigationPath, PlaylistUidOption } from '@/navigationTree'
 import type { Playlist } from '@/types/playlist'
+import EditIcon from '@/assets/edit.svg'
+import { formatDuration } from '@/utils/format'
 
 const playlists = ref<Playlist[]>([])
 const loading = ref(true)
@@ -194,14 +196,16 @@ onMounted(loadPlaylists)
               <div class="bg-gradient-to-r from-brand-500 to-brand-700 p-4 text-white">
                 <div class="flex items-center justify-between mb-1">
                   <h3 class="font-extrabold text-lg truncate pr-2 tracking-wide drop-shadow-brand">{{ playlist.info.name }}</h3>
+                  <span v-if="playlist.info.duration" class="ml-2 flex items-center gap-1 text-sm font-bold text-white/80">
+                    <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    {{ formatDuration(playlist.info.duration) }}
+                  </span>
                   <button 
                     @click="openEditor(playlist.uid)" 
                     class="opacity-0 group-hover:opacity-100 bg-white/20 hover:bg-white/40 rounded-xl p-2 transition-all duration-200 border-2 border-brand-200"
                     title="Éditer"
                   >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"/>
-                    </svg>
+                    <img :src="EditIcon" alt="Edit" class="w-5 h-5" />
                   </button>
                 </div>
                 <div class="flex items-center gap-2 text-sm text-white/80">

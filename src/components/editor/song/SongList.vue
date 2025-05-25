@@ -6,6 +6,7 @@ import { nav, NavigationPath } from '@/navigationTree'
 
 import type { Song } from '@/types/song'
 import EditIcon from '@/assets/edit.svg'
+import { formatDuration } from '@/utils/format'
 
 
 const songs = ref<Song[]>([])
@@ -78,12 +79,6 @@ async function addSong() {
   if (result?.success) {
     await loadSongs()
   }
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 onMounted(loadSongs)
