@@ -15,16 +15,6 @@ import { registerPlaylistIpcHandlers } from './ipc/playlist'
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// The built directory structure
-//
-// ├─┬ dist-electron
-// │ ├─┬ main
-// │ │ └── index.js    > Electron-Main
-// │ └─┬ preload
-// │   └── index.mjs   > Preload-Scripts
-// ├─┬ dist
-// │ └── index.html    > Electron-Renderer
-//
 process.env.APP_ROOT = path.join(__dirname, '../..')
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
@@ -46,9 +36,39 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0)
 }
 
-// Enable WebXR and related features - COMPREHENSIVE FLAGS
+// =================== WEBXR FLAGS - FIXED VERSION ===================
 console.log('[main] Setting up WebXR command line switches...')
 
+// CRITICAL: Ces flags doivent être appelés AVANT app.whenReady()
+// Grouper tous les features en un seul flag pour éviter les écrasements
+app.commandLine.appendSwitch('enable-features', 'WebXR,WebXRGamepadSupport,WebXRIncubations,OpenXR')
+
+// WebXR Core
+app.commandLine.appendSwitch('enable-webxr')
+app.commandLine.appendSwitch('enable-webxr-experimental-features')
+
+// Hardware access pour VR headsets
+app.commandLine.appendSwitch('enable-webxr-incubations')
+app.commandLine.appendSwitch('enable-openxr')
+app.commandLine.appendSwitch('force-webxr-runtime', 'openxr')
+
+// WebGL & GPU
+app.commandLine.appendSwitch('enable-webgl')
+app.commandLine.appendSwitch('enable-webgl2-compute-context')
+app.commandLine.appendSwitch('enable-unsafe-webgpu')
+
+// Security & Hardware access
+app.commandLine.appendSwitch('disable-web-security')
+app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor')
+app.commandLine.appendSwitch('ignore-certificate-errors')
+app.commandLine.appendSwitch('allow-running-insecure-content')
+
+// IMPORTANT: Pour accès aux périphériques VR
+app.commandLine.appendSwitch('enable-usb-user-gesture-requirement-disabled')
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
+
+console.log('[main] WebXR flags configured')
+// ================================================================
 
 let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
@@ -66,18 +86,34 @@ async function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      // IMPORTANT: Activer les features expérimentales pour WebXR
+      // WebXR preferences
       experimentalFeatures: true,
-      // Activer WebGL (requis pour WebXR)
       webgl: true,
-      // Permettre l'accès aux APIs web modernes
-      webSecurity: false, // À utiliser avec précaution
+      webSecurity: false,
+      // Hardware access
+      allowRunningInsecureContent: true,
+      // Permissions
+      nodeIntegrationInWorker: false,
     }
   })
+
+  const ses = win.webContents.session;
+
+  // Automatically grant permission for USB devices
+  ses.setDevicePermissionHandler((details) => {
+    console.log(details);
+    return true; // Grant permission
+  });
+
+  // Handle USB device selection
+  ses.on('select-usb-device', (event, details, callback) => {
+    event.preventDefault();
+    // Select the first available device
+    console.log(details.deviceList[0]);
+  });
   
-  if (VITE_DEV_SERVER_URL) { // #298
+  if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
-    // Open devTool if the app is not packaged
     win.webContents.openDevTools()
   } else {
     win.loadFile(indexHtml)
@@ -88,23 +124,19 @@ async function createWindow() {
     if (url.startsWith('https:')) shell.openExternal(url)
     return { action: 'deny' }
   })
-  // win.webContents.on('will-navigate', (event, url) => { }) #344
+
+  // IMPORTANT: Gérer les permissions pour WebXR
+  win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    console.log(`[main] Permission requested: ${permission}`)
+    // Allow permissions related to WebXR/VR
+    if ((permission as string) === 'camera' || (permission as string) === 'microphone' || (permission as string) === 'sensors') {
+      callback(true)
+    } else {
+      callback(false)
+    }
+  })
 }
 
-// CRUCIAL: Ajouter les flags Chrome pour WebXR
-app.commandLine.appendSwitch('enable-features', 'WebXR');
-app.commandLine.appendSwitch('enable-webxr');
-app.commandLine.appendSwitch('enable-webxr-experimental-features');
-app.commandLine.appendSwitch('enable-webgl');
-app.commandLine.appendSwitch('enable-webgl2-compute-context');
-  
-// Optionnel: Pour le développement, désactiver la sécurité web
-app.commandLine.appendSwitch('disable-web-security');
-app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor'); 
-  
-// IMPORTANT: Ajouter ces flags AVANT que l'app ne démarre
-app.commandLine.appendSwitch('enable-unsafe-webgpu');
-app.commandLine.appendSwitch('enable-features', 'WebXR,WebXRGamepadSupport,WebXRIncubations');
 app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {
@@ -114,7 +146,6 @@ app.on('window-all-closed', () => {
 
 app.on('second-instance', () => {
   if (win) {
-    // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore()
     win.focus()
   }
@@ -156,7 +187,6 @@ function generateRandomString(length: number = 10): string {
 async function ensureDataDirectory() {
   const dataPath = join(process.cwd(), 'data')
   
-  // Create directory if it doesn't exist
   if (!existsSync(dataPath)) {
     await mkdir(dataPath, { recursive: true })
   }
