@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { nextTick } from 'vue'
-import { ref, onMounted } from 'vue'
+import { nextTick, ref, onMounted } from 'vue'
 import { t } from '@/i18n'
 import { useNavigationStore } from '@/store/navigation'
 import { nav, NavigationPath } from '@/navigationTree'
 import ThreeJSManager from '@/three/ThreeJSManager'
-import { PlaylistInfo} from '@/types/playlist'
-import { SessionInfo} from '@/types/session'
+import { PlaylistInfo } from '@/types/playlist'
+import { SessionInfo } from '@/types/session'
 
 const navStore = useNavigationStore()
 const uid = navStore.options.uid as string
@@ -17,6 +16,7 @@ const playlist = ref<PlaylistInfo | null>(null)
 const sessions = ref<SessionInfo[]>([])
 const songs = ref<any[]>([])
 const threeManager = ref<InstanceType<typeof ThreeJSManager> | null>(null)
+const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 async function loadAllData() {
   loading.value = true
@@ -50,16 +50,17 @@ async function loadAllData() {
 onMounted(async () => {
   await loadAllData()
   if (!error.value) {
-    // Mount ThreeJSManager when ready
-    await nextTick() // S'assure que le DOM est prêt    
-    threeManager.value = new ThreeJSManager({
-      container: document.getElementById('threejs-canvas'),
-      playlist: playlist.value,
-      sessions: sessions.value,
-      songs: songs.value,
-      vr: true // or from flag
-    })
-    threeManager.value.init()
+    await nextTick() // S'assure que le DOM est prêt
+    if (canvasRef.value) {
+      threeManager.value = new ThreeJSManager({
+        canvas: canvasRef.value,
+        playlist: playlist.value,
+        sessions: sessions.value,
+        songs: songs.value,
+        vr: true // or from flag
+      })
+      threeManager.value.init()
+    }
   }
 })
 </script>
@@ -73,7 +74,7 @@ onMounted(async () => {
     <div v-if="loading" class="text-center py-8 text-brand-400">{{ t('loading') }}</div>
     <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
     <div v-else class="w-full h-full">
-      <div id="threejs-canvas" class="w-full h-full bg-black rounded-xl"></div>
+      <canvas ref="canvasRef" class="w-full h-full bg-black rounded-xl" />
     </div>
   </div>
 </template> 

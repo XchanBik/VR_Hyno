@@ -2,7 +2,7 @@
 import * as THREE from 'three'
 
 interface ThreeJSManagerOptions {
-  container: HTMLElement | null
+  canvas: HTMLCanvasElement
   playlist: any
   sessions: any[]
   songs: any[]
@@ -10,7 +10,7 @@ interface ThreeJSManagerOptions {
 }
 
 export default class ThreeJSManager {
-  private container: HTMLElement | null
+  private canvas: HTMLCanvasElement
   private playlist: any
   private sessions: any[]
   private songs: any[]
@@ -21,23 +21,28 @@ export default class ThreeJSManager {
   private animationId: number | null = null
 
   constructor(options: ThreeJSManagerOptions) {
-    this.container = options.container
+    this.canvas = options.canvas
     this.playlist = options.playlist
     this.sessions = options.sessions
     this.songs = options.songs
     this.vr = !!options.vr
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000)
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas })
     this.renderer.setClearColor(0x111111)
-    if (this.container) {
-      this.renderer.setSize(this.container.clientWidth, this.container.clientHeight)
-      this.container.appendChild(this.renderer.domElement)
-    }
+    this.resize()
     if (this.vr) {
       this.renderer.xr.enabled = true
       // Optionally: navigator.xr.requestSession('immersive-vr')
     }
+  }
+
+  resize() {
+    const width = this.canvas.clientWidth || 800
+    const height = this.canvas.clientHeight || 600
+    this.renderer.setSize(width, height, false)
+    this.camera.aspect = width / height
+    this.camera.updateProjectionMatrix()
   }
 
   init() {
@@ -56,9 +61,7 @@ export default class ThreeJSManager {
 
   dispose() {
     if (this.animationId) cancelAnimationFrame(this.animationId)
-    if (this.container && this.renderer.domElement.parentNode === this.container) {
-      this.container.removeChild(this.renderer.domElement)
-    }
+    // No need to remove canvas, Vue manages it
     // TODO: Dispose Three.js objects, listeners, etc.
   }
 } 
