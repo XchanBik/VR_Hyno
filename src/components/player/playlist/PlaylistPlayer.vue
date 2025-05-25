@@ -4,8 +4,9 @@ import { t } from '@/i18n'
 import { useNavigationStore } from '@/store/navigation'
 import { nav, NavigationPath } from '@/navigationTree'
 import ThreeJSManager from '@/three/ThreeJSManager'
-import { PlaylistInfo } from '@/types/playlist'
-import { SessionInfo } from '@/types/session'
+import type { PlaylistInfo } from '@/types/playlist'
+import type { SessionInfo } from '@/types/session'
+import type { SongInfo } from '@/types/song'
 
 const navStore = useNavigationStore()
 const uid = navStore.options.uid as string
@@ -14,9 +15,10 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const playlist = ref<PlaylistInfo | null>(null)
 const sessions = ref<SessionInfo[]>([])
-const songs = ref<any[]>([])
+const songs = ref<SongInfo[]>([])
 const threeManager = ref<InstanceType<typeof ThreeJSManager> | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const isInVR = ref(false)
 
 async function loadAllData() {
   loading.value = true
@@ -27,24 +29,32 @@ async function loadAllData() {
     if (!playlistResult?.success || !playlistResult.playlist || !playlistResult.playlist.sessions) {
       throw new Error(playlistResult?.error || 'Playlist not found or missing sessions')
     }
-    playlist.value = playlistResult.playlist
+    playlist.value = playlistResult.playlist as PlaylistInfo
     // Load all sessions
     const sessionResults = await Promise.all(
       playlist.value!.sessions.map((sid: string) => window.electronAPI?.getSession?.(sid))
     )
-    sessions.value = sessionResults.map(r => r.session)
+    sessions.value = sessionResults.map(r => r.session as SessionInfo)
     // Load all songs
-    const songUids = [...new Set(sessions.value.map((s: any) => s.song_uid))]
+    const songUids = [...new Set(sessions.value.map((s: SessionInfo) => s.song_uid))]
     const songResults = await Promise.all(
       songUids.map((sid: string) => window.electronAPI?.getSong?.(sid))
     )
-    songs.value = songResults.map(r => r.song)
+    songs.value = songResults.map(r => r.song as SongInfo)
     loading.value = false
   } catch (e) {
     error.value = (e as Error).message
     loading.value = false
   }
   console.log('loadAllData END')
+}
+
+function onStartVR() {
+  if (threeManager.value) {
+    threeManager.value.enterVR().then(() => {
+      isInVR.value = true
+    })
+  }
 }
 
 onMounted(async () => {
@@ -73,8 +83,9 @@ onMounted(async () => {
     </button>
     <div v-if="loading" class="text-center py-8 text-brand-400">{{ t('loading') }}</div>
     <div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
-    <div v-else class="w-full h-full">
-      <canvas ref="canvasRef" class="w-full h-full bg-black rounded-xl" />
+    <div v-else class="w-full h-full flex flex-col items-center justify-center">
+      <button v-if="!isInVR" @click="onStartVR" class="bg-brand-500 text-white rounded-full px-8 py-4 text-2xl font-bold shadow-lg hover:bg-brand-600 transition mb-8">Start VR</button>
+      <canvas v-show="isInVR" ref="canvasRef" class="w-full h-full bg-black rounded-xl" />
     </div>
   </div>
 </template> 
