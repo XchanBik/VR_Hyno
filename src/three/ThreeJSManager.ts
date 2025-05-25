@@ -10,6 +10,7 @@ interface ThreeJSManagerOptions {
     sessions: SessionInfo[]
     songs: SongInfo[]
     vr?: boolean
+    debug?: boolean
 }
 
 export default class ThreeJSManager {
@@ -30,6 +31,9 @@ export default class ThreeJSManager {
     private isSessionStarted = false
     private lastFrameTime: number | null = null
     private isInVR = false
+    private debug: boolean
+    private frameCount = 0
+    private lastFpsTime = performance.now()
 
   constructor(options: ThreeJSManagerOptions) {
     this.canvas = options.canvas
@@ -37,6 +41,7 @@ export default class ThreeJSManager {
     this.sessions = options.sessions
     this.songs = options.songs
     this.vr = !!options.vr
+    this.debug = !!options.debug
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000)
     this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas })
@@ -118,6 +123,16 @@ export default class ThreeJSManager {
       }
     }
     this.renderer.render(this.scene, this.camera)
+    // Debug FPS
+    if (this.debug) {
+      this.frameCount++
+      if (now - this.lastFpsTime > 1000) {
+        const fps = this.frameCount / ((now - this.lastFpsTime) / 1000)
+        console.log(`[ThreeJSManager] FPS: ${fps.toFixed(1)}`)
+        this.frameCount = 0
+        this.lastFpsTime = now
+      }
+    }
   }
 
   /**
@@ -142,8 +157,8 @@ export default class ThreeJSManager {
         await this.renderer.xr.setSession(session)
         this.isInVR = true
       } catch (e) {
-        alert('Could not start VR: ' + (e as Error).message)
-        console.error(e)
+        this.isInVR = false
+        throw e
       }
     }
   }

@@ -46,6 +46,10 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0)
 }
 
+// Enable WebXR and related features - COMPREHENSIVE FLAGS
+console.log('[main] Setting up WebXR command line switches...')
+
+
 let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
@@ -60,16 +64,17 @@ async function createWindow() {
     width: 1600,
     height: 900,
     webPreferences: {
-      preload,
-      // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
-      // nodeIntegration: true,
-
-      // Consider using contextBridge.exposeInMainWorld
-      // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
-      // contextIsolation: false,
-    },
+      nodeIntegration: false,
+      contextIsolation: true,
+      // IMPORTANT: Activer les features expérimentales pour WebXR
+      experimentalFeatures: true,
+      // Activer WebGL (requis pour WebXR)
+      webgl: true,
+      // Permettre l'accès aux APIs web modernes
+      webSecurity: false, // À utiliser avec précaution
+    }
   })
-
+  
   if (VITE_DEV_SERVER_URL) { // #298
     win.loadURL(VITE_DEV_SERVER_URL)
     // Open devTool if the app is not packaged
@@ -86,6 +91,20 @@ async function createWindow() {
   // win.webContents.on('will-navigate', (event, url) => { }) #344
 }
 
+// CRUCIAL: Ajouter les flags Chrome pour WebXR
+app.commandLine.appendSwitch('enable-features', 'WebXR');
+app.commandLine.appendSwitch('enable-webxr');
+app.commandLine.appendSwitch('enable-webxr-experimental-features');
+app.commandLine.appendSwitch('enable-webgl');
+app.commandLine.appendSwitch('enable-webgl2-compute-context');
+  
+// Optionnel: Pour le développement, désactiver la sécurité web
+app.commandLine.appendSwitch('disable-web-security');
+app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor'); 
+  
+// IMPORTANT: Ajouter ces flags AVANT que l'app ne démarre
+app.commandLine.appendSwitch('enable-unsafe-webgpu');
+app.commandLine.appendSwitch('enable-features', 'WebXR,WebXRGamepadSupport,WebXRIncubations');
 app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {

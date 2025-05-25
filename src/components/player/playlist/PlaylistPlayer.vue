@@ -49,11 +49,15 @@ async function loadAllData() {
   console.log('loadAllData END')
 }
 
-function onStartVR() {
+async function onStartVR() {
   if (threeManager.value) {
-    threeManager.value.enterVR().then(() => {
+    try {
+      await threeManager.value.enterVR()
       isInVR.value = true
-    })
+    } catch (e) {
+      isInVR.value = false
+      alert('Could not start VR: ' + (e as Error).message)
+    }
   }
 }
 

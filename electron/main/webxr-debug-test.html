@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebXR Electron Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Basic WebXR API Detection</h2>
+        <div id="api-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Navigator Properties</h2>
+        <div id="navigator-info"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. WebXR Session Support</h2>
+        <div id="session-support"></div>
+        <button id="test-vr" onclick="testVRSession()">Test VR Session</button>
+        <button id="test-ar" onclick="testARSession()">Test AR Session</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Console Logs</h2>
+        <div id="console-logs"></div>
+    </div>
+
+    <script>
+        // Utility function to log to both console and page
+        function log(message, type = 'info') {
+            console.log(`[WebXR Test] ${message}`);
+            const logDiv = document.getElementById('console-logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'success'}`;
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logDiv.appendChild(logEntry);
+        }
+
+        // Test 1: Basic API Detection
+        function testBasicAPI() {
+            const apiStatus = document.getElementById('api-status');
+            
+            log('Testing basic WebXR API detection...');
+            
+            if ('xr' in navigator) {
+                apiStatus.innerHTML = '<div class="status success">✓ navigator.xr is available</div>';
+                log('navigator.xr is available', 'success');
+                return true;
+            } else {
+                apiStatus.innerHTML = '<div class="status error">✗ navigator.xr is NOT available</div>';
+                log('navigator.xr is NOT available - WebXR API not enabled', 'error');
+                return false;
+            }
+        }
+
+        // Test 2: Navigator info
+        function testNavigatorInfo() {
+            const navInfo = document.getElementById('navigator-info');
+            
+            const info = {
+                userAgent: navigator.userAgent,
+                vendor: navigator.vendor,
+                platform: navigator.platform,
+                webdriver: navigator.webdriver,
+                hardwareConcurrency: navigator.hardwareConcurrency
+            };
+            
+            let html = '';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<div><strong>${key}:</strong> ${value}</div>`;
+            }
+            
+            navInfo.innerHTML = html;
+            log(`Browser: ${navigator.userAgent.substring(0, 50)}...`);
+        }
+
+        // Test 3: Session Support
+        async function testSessionSupport() {
+            const supportDiv = document.getElementById('session-support');
+            
+            if (!('xr' in navigator)) {
+                supportDiv.innerHTML = '<div class="status error">Cannot test - WebXR API not available</div>';
+                return;
+            }
+
+            try {
+                // Test VR support
+                const vrSupported = await navigator.xr.isSessionSupported('immersive-vr');
+                log(`VR Session Support: ${vrSupported}`);
+                
+                // Test AR support  
+                const arSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                log(`AR Session Support: ${arSupported}`);
+                
+                // Test inline support
+                const inlineSupported = await navigator.xr.isSessionSupported('inline');
+                log(`Inline Session Support: ${inlineSupported}`);
+                
+                supportDiv.innerHTML = `
+                    <div class="status ${vrSupported ? 'success' : 'warning'}">VR Sessions: ${vrSupported ? 'Supported' : 'Not Supported'}</div>
+                    <div class="status ${arSupported ? 'success' : 'warning'}">AR Sessions: ${arSupported ? 'Supported' : 'Not Supported'}</div>
+                    <div class="status ${inlineSupported ? 'success' : 'warning'}">Inline Sessions: ${inlineSupported ? 'Supported' : 'Not Supported'}</div>
+                `;
+                
+            } catch (error) {
+                log(`Error testing session support: ${error.message}`, 'error');
+                supportDiv.innerHTML = `<div class="status error">Error testing session support: ${error.message}</div>`;
+            }
+        }
+
+        // Test VR Session Creation
+        async function testVRSession() {
+            log('Attempting to create VR session...');
+            
+            if (!('xr' in navigator)) {
+                log('Cannot create VR session - WebXR API not available', 'error');
+                return;
+            }
+
+            try {
+                const session = await navigator.xr.requestSession('immersive-vr');
+                log('VR session created successfully!', 'success');
+                
+                // End the session immediately
+                session.end();
+                log('VR session ended');
+                
+            } catch (error) {
+                log(`VR session creation failed: ${error.name} - ${error.message}`, 'error');
+                console.error('Full VR session error:', error);
+            }
+        }
+
+        // Test AR Session Creation
+        async function testARSession() {
+            log('Attempting to create AR session...');
+            
+            if (!('xr' in navigator)) {
+                log('Cannot create AR session - WebXR API not available', 'error');
+                return;
+            }
+
+            try {
+                const session = await navigator.xr.requestSession('immersive-ar');
+                log('AR session created successfully!', 'success');
+                
+                // End the session immediately
+                session.end();
+                log('AR session ended');
+                
+            } catch (error) {
+                log(`AR session creation failed: ${error.name} - ${error.message}`, 'error');
+                console.error('Full AR session error:', error);
+            }
+        }
+
+        // Run tests on page load
+        window.addEventListener('load', async () => {
+            log('Starting WebXR debug tests...');
+            
+            // Test 1: Basic API
+            const hasAPI = testBasicAPI();
+            
+            // Test 2: Navigator info
+            testNavigatorInfo();
+            
+            // Test 3: Session support (only if API available)
+            if (hasAPI) {
+                await testSessionSupport();
+            } else {
+                document.getElementById('test-vr').disabled = true;
+                document.getElementById('test-ar').disabled = true;
+            }
+            
+            log('All tests completed');
+        });
+    </script>
+</body>
+</html>
